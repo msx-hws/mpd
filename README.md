@@ -2,7 +2,7 @@
 
 MSX ROM & DSK Server is a lightweight, modern web application designed to serve retro MSX game ROMs, COM files, and DSK images directly to your MSX Pico or other compatible flash cartridges.
 
-![MSX ROM Server Interface](msx_flask_ui.png)
+![MSX ROM Server Interface](docs/images/msx_flask_ui.png)
 
 ## Features
 
@@ -10,6 +10,30 @@ MSX ROM & DSK Server is a lightweight, modern web application designed to serve 
 - **Automated ROM Padding:** MSX Pico hardware requires `.rom` files to be at least `0x1000` (4096 bytes) in size. This server automatically pads smaller ROM files (e.g., converted `.com` files) with null bytes on-the-fly during download, without permanently altering the original files on the server!
 - **Sleek Web Interface:** Enjoy a clean, responsive, and retro-themed web interface for browsing, managing (uploading/renaming/deleting), and downloading your favorite games.
 - **Direct MSX Integration:** Download files directly to your MSX Pico via WiFi without ever needing to touch an SD card.
+
+## Project Structure
+
+```text
+msx-flask/
+├── app/                  # Flask application package
+│   ├── __init__.py       # Package initialization & app export
+│   ├── server.py         # Routes & request handlers
+│   ├── utils.py          # File system, stats & helpers
+│   ├── translations.py   # Multi-language string tables
+│   ├── static/           # CSS & static web assets
+│   └── templates/        # Jinja2 HTML templates
+├── docs/                 # Documentation, specifications & assets
+│   ├── images/           # UI screenshots
+│   ├── openapi.yaml      # OpenAPI 3.0 specification
+│   └── PROJECT_SPEC.md   # Project design specification
+├── tests/                # Automated test suite
+│   ├── __init__.py
+│   └── test_app.py
+├── Dockerfile            # Container build definition
+├── docker-compose.yml    # Container orchestration
+├── wsgi.py               # WSGI entry point
+└── requirements.txt      # Python dependencies
+```
 
 ## Usage
 
@@ -24,7 +48,7 @@ The recommended way to run this server is using Docker Compose.
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/Pax-nl/msx-flask.git
+   git clone https://github.com/msx-hws/msx-flask.git
    cd msx-flask
    ```
 2. Copy the example environment file and configure it if needed:

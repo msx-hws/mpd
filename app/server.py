@@ -17,7 +17,7 @@ from logging.handlers import RotatingFileHandler
 from flask import Flask, request, Response, render_template, redirect, url_for, session, send_file, jsonify
 from werkzeug.utils import secure_filename
 
-from utils import (
+from app.utils import (
     SERVE_DIRECTORY,
     safe_path,
     timestamp_filename,
@@ -26,7 +26,7 @@ from utils import (
     get_download_stats,
     record_download,
 )
-from translations import TRANSLATIONS
+from app.translations import TRANSLATIONS
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)

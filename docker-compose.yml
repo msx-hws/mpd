@@ -6,11 +6,8 @@ services:
       - "${HOST_PORT:-80}:5001"
     volumes:
       - ./files:/app/files
-      - ./app.py:/app/app.py:ro
-      - ./utils.py:/app/utils.py:ro
-      - ./translations.py:/app/translations.py:ro
-      - ./templates:/app/templates:ro
-      - ./static:/app/static:ro
+      - ./app:/app/app:ro
+      - ./wsgi.py:/app/wsgi.py:ro
       - ./requirements.txt:/app/requirements.txt:ro
     env_file:
       - .env

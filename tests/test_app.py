@@ -5,8 +5,8 @@ import os
 import logging
 logging.disable(logging.CRITICAL)
 
-from utils import safe_relative_path, safe_path, SERVE_DIRECTORY
-from translations import TRANSLATIONS
+from app.utils import safe_relative_path, safe_path, SERVE_DIRECTORY
+from app.translations import TRANSLATIONS
 from app import app
 
 class TestMSXServer(unittest.TestCase):
@@ -35,7 +35,7 @@ class TestMSXServer(unittest.TestCase):
         self.assertEqual(nl_keys, en_keys, "NL and EN translation keys must match!")
 
     def test_timestamp_filename(self):
-        from utils import timestamp_filename
+        from app.utils import timestamp_filename
         from datetime import datetime
         fixed_dt = datetime(2026, 10, 6, 18, 30, 45)
         stamped = timestamp_filename("game.rom", dt=fixed_dt)

@@ -1,10 +1,31 @@
+# Environment and secrets
+.env
+.env.local
+
+# ROMs and disk images
 *.dsk
 *.DSK
-.env
+*.rom
+*.ROM
+
+# Application runtime data
 files/
 logs/
+
+# Python cache and virtual environment
 __pycache__/
+*.py[cod]
+*$py.class
 .venv/
+env/
+venv/
+.pytest_cache/
+
+# IDE and OS
 .DS_Store
-*.pyc
+Thumbs.db
+.idea/
+.vscode/
+
+# Project private notes
 AGENTS.md
