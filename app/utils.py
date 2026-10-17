@@ -5,8 +5,9 @@ import sqlite3
 import html
 from werkzeug.utils import secure_filename
 
-# Configure the directory to serve
-BASE_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
+# Configure the directory to serve (project root is parent of app package)
+APP_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIRECTORY = os.path.dirname(APP_DIR)
 SERVE_DIRECTORY = os.path.join(BASE_DIRECTORY, "files")
 
 def safe_relative_path(user_path):
