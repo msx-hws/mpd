@@ -1,121 +1,123 @@
-# Problemen Oplossen (Troubleshooting)
+# Troubleshooting Guide
 
-Dit document helpt je bij het opsporen en oplossen van veelvoorkomende problemen met de **MSX ROM & DSK Server**, **Docker** en de verbinding met je **MSX Pico / Flash cartridge**.
+This guide helps you identify and resolve common issues with the **MSX-Pico-Station**, **Docker**, and network connectivity with your **MSX Pico / Flash cartridge**.
 
----
-
-## Inhoudsopgave
-1. [MSX Pico vindt geen bestanden of maakt geen verbinding](#1-msx-pico-vindt-geen-bestanden-of-maakt-geen-verbinding)
-2. [Docker start niet of container stopt direct](#2-docker-start-niet-of-container-stopt-direct)
-3. [De webpagina laadt niet in de browser](#3-de-webpagina-laadt-niet-in-de-browser)
-4. [Uploaden van bestanden lukt niet](#4-uploaden-van-bestanden-lukt-niet)
-5. [Spel start niet of geeft een zwart scherm op de MSX](#5-spel-start-niet-of-geeft-een-zwart-scherm-op-de-msx)
-6. [Logs en status controleren](#6-logs-en-status-controleren)
+*Lees dit document in het Nederlands: [docs/TROUBLESHOOTING.nl.md](TROUBLESHOOTING.nl.md).*
 
 ---
 
-## 1. MSX Pico vindt geen bestanden of maakt geen verbinding
+## Table of Contents
+1. [MSX Pico Cannot Connect or File List is Empty](#1-msx-pico-cannot-connect-or-file-list-is-empty)
+2. [Docker Won't Start or Exits Immediately](#2-docker-wont-start-or-exits-immediately)
+3. [Web Page Won't Load in Browser](#3-web-page-wont-load-in-browser)
+4. [File Upload Fails](#4-file-upload-fails)
+5. [Game Gives a Black Screen on MSX](#5-game-gives-a-black-screen-on-msx)
+6. [Checking Logs & Status](#6-checking-logs--status)
 
-### Symptomen:
-- De MSX Pico geeft een time-out, error of blijft hangen op "Connecting...".
-- De bestandenlijst blijft helemaal leeg.
+---
 
-### Oorzaken en oplossingen:
+## 1. MSX Pico Cannot Connect or File List is Empty
 
-#### A. Controleer `URL.TXT` op de SD-kaart
-Het bestand `URL.TXT` moet exact aan de volgende eisen voldoen:
-1. **Locatie:** in de map `FH_FILES/` direct in de root van je SD-kaart (`SD-kaart:\FH_FILES\URL.TXT`).
-2. **Inhoud:** exact het IP-adres met protocol en afsluitende schuine streep (`/`), bijvoorbeeld:
+### Symptoms:
+- The MSX Pico shows a connection error, times out, or remains stuck on "Connecting...".
+- The file listing on screen is empty.
+
+### Causes and Solutions:
+
+#### A. Check `URL.TXT` on the Micro-SD Card
+The file `URL.TXT` must strictly follow these requirements:
+1. **Location:** inside the `FH_FILES/` folder in the root of your SD card (`SD_CARD:\FH_FILES\URL.TXT`).
+2. **Content:** exact IP address with protocol and a trailing slash (`/`), for example:
    ```text
    http://192.168.1.150/
    ```
-3. **Geen spaties of extra regels:** zorg dat er geen verborgen spaties voor of na het adres staan, en geen extra witregels.
-4. **Geen HTTPS:** MSX-hardware ondersteunt geen SSL/TLS encryptie (`https://`). Gebruik altijd `http://`.
-5. **Exacte bestandsnaam:** let op dat Windows het bestand niet per ongeluk `URL.TXT.txt` noemt (schakel "Bestandsnaamextensies weergeven" in via Windows Verkenner).
+3. **No spaces or empty lines:** ensure there are no leading/trailing spaces or extra line breaks.
+4. **No HTTPS:** MSX hardware does not support SSL/TLS encryption (`https://`). Always use `http://`.
+5. **Exact filename:** make sure Windows didn't save it as `URL.TXT.txt` (turn on "File name extensions" in Windows Explorer).
 
-#### B. WiFi en hetzelfde netwerk
-- Je MSX Pico én de computer/server waarop deze applicatie draait **moeten met hetzelfde netwerk (dezelfde router/WiFi)** verbonden zijn.
-- Sommige routers hebben een functie genaamd **AP Isolation** of **Gastnetwerk (Guest Wi-Fi)** ingeschakeld. Als de MSX Pico op een gastnetwerk zit, kan hij de server niet bereiken. Sluit beide aan op het gewone thuisnetwerk.
+#### B. Wi-Fi and Same Subnet
+- Your MSX Pico and the machine running this application **must be on the same local Wi-Fi / LAN network**.
+- Check if your router has **AP Isolation** or **Guest Wi-Fi** enabled. Devices on a guest network cannot communicate with local servers. Connect both devices to your standard home Wi-Fi.
 
-#### C. Firewall op de computer
-- Als de server draait op Windows, macOS of Linux, kan de ingebouwde firewall inkomend verkeer op poort `80` (of `5001`) blokkeren.
-- **Test:** open vanaf een andere telefoon of laptop in hetzelfde netwerk de browser en ga naar `http://<IP-van-je-server>/`. Laadt de pagina niet? Dan blokkeert de firewall waarschijnlijk de verbinding.
-
----
-
-## 2. Docker start niet of container stopt direct
-
-### Symptomen:
-- `docker compose up -d` geeft een foutmelding.
-- `docker ps` toont de container niet of toont de status `Exited`.
-
-### Oorzaken en oplossingen:
-
-#### A. Docker Desktop draait niet
-- Zorg ervoor dat het programma **Docker Desktop** daadwerkelijk is opgestart en het icoontje groen is ("Engine running").
-
-#### B. Poort 80 is al in gebruik
-- Foutmelding: `bind: address already in use` of `port is already allocated`.
-- Oorzaak: Er draait al een ander programma (zoals Apache, Nginx, Skype, IIS of een andere webserver) op poort 80 van je computer.
-- **Let op voor de MSX Pico:** De MSX Pico cartridge ondersteunt **geen** afwijkende poorten (zoals `:8080`) in de URL en vereist standaard poort `80`. De beste oplossing is daarom om het conflicterende programma op poort 80 te stoppen of te verplaatsen naar een andere poort, zodat `msx-pico-station` poort 80 kan gebruiken.
-- *(Alleen als je de server puur via de browser/API gebruikt en géén MSX Pico)*: Dan kun je in `.env` de poort wijzigen (bijv. `HOST_PORT=8080`). Zodra je dit doet, kan de MSX Pico er echter **niet** meer bij!
+#### C. Firewall Settings
+- If running on Windows, macOS, or Linux, the local firewall might block incoming traffic on port `80` (or `5001`).
+- **Test:** open a browser on another phone or laptop on the same network and navigate to `http://<server-ip>/`. If it doesn't load, the firewall is likely blocking incoming connections.
 
 ---
 
-## 3. De webpagina laadt niet in de browser
+## 2. Docker Won't Start or Exits Immediately
 
-1. **Draait de container wel?**
-   Voer in de terminal uit:
+### Symptoms:
+- `docker compose up -d` outputs an error.
+- `docker ps` does not show the container, or shows status `Exited`.
+
+### Causes and Solutions:
+
+#### A. Docker Desktop is not running
+- Make sure **Docker Desktop** is running and the status icon is green ("Engine running").
+
+#### B. Port 80 is already in use
+- Error message: `bind: address already in use` or `port is already allocated`.
+- Cause: Another application (e.g. Apache, Nginx, Skype, IIS, or another web service) is already listening on port 80.
+- **Important Note for MSX Pico:** The MSX Pico cartridge firmware strictly expects port **80** and cannot connect to custom ports (like `:8080`). The best solution is to stop or reconfigure the other service using port 80 so that `msx-pico-station` can use it.
+- *(Only if you are using the server purely via browser/API without an MSX Pico)*: You can change the port in `.env` (e.g. `HOST_PORT=8080`). Remember that doing so breaks compatibility with the MSX Pico hardware!
+
+---
+
+## 3. Web Page Won't Load in Browser
+
+1. **Is the container running?**
+   Run in your terminal:
    ```bash
    docker compose ps
    ```
-   Kijk of de status `Up` of `healthy` is.
-2. **Kijk in de logs:**
+   Verify that the status is `Up` or `healthy`.
+2. **Check container logs:**
    ```bash
    docker compose logs -f
    ```
-   Hier zie je direct of er een Python- of permissiefout optreedt.
-3. **Probeer localhost:**
-   Als je op de server zelf zit, test dan in je browser `http://localhost/` (of `http://localhost:5001/` indien lokaal gestart zonder Docker).
+   Any Python or permission exceptions will be visible here.
+3. **Test localhost:**
+   If testing directly on the host machine, try `http://localhost/` in your browser.
 
 ---
 
-## 4. Uploaden van bestanden lukt niet
+## 4. File Upload Fails
 
-1. **Map-rechten (File permissions):**
-   De container draait onder een veilige, niet-root gebruiker (`app`). Als de map `files/` op je computer geen schrijfrechten heeft voor deze gebruiker, kan het uploaden mislukken.
-   - Op Linux/macOS:
+1. **File permissions:**
+   The Docker container runs as an unprivileged user (`app`). If the host directory `files/` does not grant write permissions, uploads will fail.
+   - On Linux/macOS:
      ```bash
      chmod -R 777 files/
      ```
-2. **Bestandsnaam bevat vreemde tekens:**
-   Gebruik bij voorkeur standaard letters, cijfers, streepjes (`-`) en underscores (`_`). Spaties en speciale leestekens worden automatisch gefilterd om compatibiliteit met MSX-DOS en de Pico te waarborgen.
+2. **Filenames with invalid characters:**
+   Use standard alphanumeric characters, hyphens (`-`), and underscores (`_`). Spaces and special characters are automatically sanitized to maintain MSX-DOS and Pico compatibility.
 
 ---
 
-## 5. Spel start niet of geeft een zwart scherm op de MSX
+## 5. Game Gives a Black Screen on MSX
 
-1. **Bestandsgrootte (.ROM padding):**
-   De MSX Pico vereist dat `.rom` bestanden minimaal 4096 of 8192 bytes zijn. Deze server vult kleine bestanden automatisch aan met null-bytes tijdens het downloaden.
-2. **Onjuist ROM-type / mapper:**
-   Sommige spellen vereisen een specifieke mapper (zoals Konami SCC, ASCII 8K, ASCII 16K). Raadpleeg de handleiding van je MSX Pico over welke mapper-types ondersteund worden.
-3. **Geconverteerde .COM bestanden:**
-   Als je een `.com` programma downloadt als `.rom`, zorg dan dat je de extensie in de `files/` map hernoemt naar `.rom` zodat de server deze als cartridge-ROM serveert.
+1. **File size (.ROM padding):**
+   The MSX Pico requires `.rom` files to be at least 4096 or 8192 bytes. This server automatically pads undersized ROMs with null bytes during download.
+2. **Mapper compatibility:**
+   Some games require specific ROM mappers (such as Konami SCC, ASCII 8K, ASCII 16K). Consult your MSX Pico cartridge documentation regarding supported mappers.
+3. **Converted .COM files:**
+   If you have a `.com` executable and wish to launch it via the Pico ROM loader, rename its extension to `.rom` before serving.
 
 ---
 
-## 6. Logs en status controleren
+## 6. Checking Logs & Status
 
-De server houdt uitgebreide logs bij van alle downloads, uploads en MSX-aanvragen.
+The server logs all requests, downloads, uploads, and MSX clients.
 
-- **Realtime Docker logs:**
+- **Real-time Docker logs:**
   ```bash
   docker compose logs -f
   ```
-- **Logbestand bekijken:**
-  Het logbestand vind je in `logs/app.log`.
-- **Health check status:**
-  Vanaf de servermachine kun je de status controleren via:
+- **Log file on disk:**
+  Logs are saved in `logs/app.log`.
+- **Health check endpoint:**
+  From the host, you can verify health status via:
   ```bash
   curl http://localhost:5001/health/getstatus
   ```

@@ -1,123 +1,135 @@
 # MSX-Pico-Station
 
-MSX-Pico-Station is een lichtgewicht webserver om MSX ROM-, COM- en DSK-bestanden direct via Wi-Fi te serveren aan je **MSX Pico** (of compatibele flash cartridge), én te beheren via een moderne retro-webinterface.
+[![Tests](https://github.com/msx-hws/msx-pico-station/actions/workflows/test.yml/badge.svg)](https://github.com/msx-hws/msx-pico-station/actions)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Language: Dutch](https://img.shields.io/badge/Language-Nederlands-blue.svg)](README.nl.md)
+
+MSX-Pico-Station is a lightweight web server designed to serve MSX ROM, COM, and DSK files directly over Wi-Fi to your **MSX Pico** (or compatible flash cartridge), with a retro-themed cyberpunk web management interface.
+
+*Read this documentation in other languages: [Nederlands (Dutch)](README.nl.md).*
 
 ![MSX ROM Server Interface](docs/images/msx_flask_ui.png)
 
 ---
 
-## 💡 Wat is dit en hoe werkt het?
+## 💡 What is this and how does it work?
 
-- **Voor je MSX Pico:** Je MSX Pico cartridge haalt spellen direct via het netwerk binnen. Je hoeft je SD-kaart dus niet steeds in je computer te steken om nieuwe games te proberen.
-- **Wat is een API?** Een API (*Application Programming Interface*) is een digitale doorgeefluik waarmee apparaten en programma's met deze server kunnen praten. Zowel de MSX Pico als externe scripts gebruiken deze API om bestanden op te vragen, te downloaden of te uploaden.
-- **Wat is Docker?** Docker zorgt ervoor dat de server in een kant-en-klaar geïsoleerd pakketje ("container") draait, inclusief alle benodigde programma's en Python-onderdelen. Je hoeft zelf niets ingewikkelds te installeren of te configureren; met één commando draait alles direct.
-
----
-
-## ⚡ Belangrijkste Functies
-
-- **Retro Cyberpunk Design:** Volledig responsive webinterface met donkere modus, CRT scanline overlay en Share Tech Mono terminal-look.
-- **Automatische ROM Padding:** De MSX Pico vereist dat `.rom` bestanden minimaal `0x1000` (4096 bytes) groot zijn. De server vult kleinere bestanden tijdens het downloaden automatisch aan met null-bytes. De originele bestanden op de server blijven onaangetast!
-- **Web Bestandsbeheer:** Upload, hernoem, download en verwijder spellen eenvoudig via je browser via de `/manage` pagina.
-- **Interactieve API Documentatie (Swagger):** Bekijk en test alle API-functies direct via de ingebouwde Swagger UI op `/docs` of `/swagger`.
+- **For your MSX Pico:** Your MSX Pico cartridge fetches games directly over the local network via Wi-Fi. You don't need to constantly swap the SD card in and out of your computer to try new games.
+- **What is an API?** An API (*Application Programming Interface*) is a digital service door that allows devices and software to talk directly to this server. Both the MSX Pico hardware and external scripts use this API to list, download, and manage files.
+- **What is Docker?** Docker runs the application inside an isolated, self-contained container package with all required software and Python dependencies pre-configured. You don't need complicated local installations—everything runs with a single command.
 
 ---
 
-## 🕹️ Stap-voor-stap: MSX Pico instellen met `URL.TXT`
+## ⚡ Key Features
 
-Om je MSX Pico verbinding te laten maken met deze server, moet de cartridge weten naar welk adres hij moet zoeken. Dit stel je in via een tekstbestandje genaamd `URL.TXT` op de micro-SD-kaart van je Pico.
+- **Retro Cyberpunk Design:** Fully responsive web interface with dark mode, CRT scanline overlay, and a classic terminal font.
+- **Automatic ROM Padding:** MSX Pico hardware requires `.rom` files to be at least `0x1000` (4096 bytes) in size. The server automatically pads smaller ROM files with null-bytes on the fly during transfer, without altering the original files stored on the server!
+- **Web File Management:** Upload, rename, download, and delete games easily from your browser via the `/manage` page.
+- **Interactive API Documentation (Swagger UI):** Explore and test all endpoints directly in your browser at `/docs` or `/swagger`.
 
-Volg deze stappen exact:
+---
 
-### Stap 1: Sluit de SD-kaart aan op je computer
-Plaats de micro-SD-kaart van je MSX Pico in je computer of kaartlezer.
+## 🕹️ Step-by-Step: Setting up MSX Pico with `URL.TXT`
 
-### Stap 2: Open of maak de map `FH_FILES`
-Open de SD-kaart in je Verkenner (Windows) of Finder (Mac).
-- Kijk in de hoofdmap (root) van de SD-kaart.
-- Zorg dat er een map staat met de naam:
+To allow your MSX Pico cartridge to connect to this server, it needs to know the server's network address. You configure this through a single text file named `URL.TXT` on the Pico's micro-SD card.
+
+Follow these steps carefully:
+
+### Step 1: Insert the SD card into your computer
+Place the micro-SD card from your MSX Pico into your PC or memory card reader.
+
+### Step 2: Open or create the `FH_FILES` folder
+Open the SD card in your File Explorer (Windows) or Finder (Mac).
+- Look at the root (top level) of the SD card.
+- Ensure there is a folder named:
   ```text
   FH_FILES
   ```
-  *(Als deze map nog niet bestaat, maak deze dan nieuw aan met hoofdletters).*
+  *(If it does not exist yet, create it in UPPERCASE).*
 
-### Stap 3: Maak het bestand `URL.TXT`
-1. Open de map `FH_FILES`.
-2. Maak hierin een nieuw tekstbestand aan met de naam **`URL.TXT`** (let op de `.txt` extensie en hoofdletters).
-3. Open dit bestand met Kladblok (Notepad), TextEdit of een willekeurige code-editor.
-4. Typ **uitsluitend** het HTTP-adres van je server, inclusief `http://` en een afsluitende schuine streep (`/`).
+### Step 3: Create the `URL.TXT` file
+1. Open the `FH_FILES` folder.
+2. Create a new plain text file named **`URL.TXT`** (make sure the filename and extension are uppercase).
+3. Open this file in Notepad, TextEdit, or any plain text editor.
+4. Type **only** the HTTP address of your server, including `http://` and a trailing slash (`/`).
 
-   **Voorbeeld:**
+   **Example:**
    ```text
    http://192.168.1.150/
    ```
-   *(Vervang `192.168.1.150` door het IP-adres van de computer/server waarop deze software draait).*
+   *(Replace `192.168.1.150` with the local IP address of the computer/server running this software).*
 
 > [!IMPORTANT]
-> **Belangrijke regels voor `URL.TXT`:**
-> - **Verplicht Poort 80 (HTTP):** De MSX Pico firmware verwacht standaard poort **80** (`http://`). De Pico kan **geen aangepaste poortnummers** (zoals `:8080`) aan in de URL. Als je de poort van de server aanpast naar iets anders dan 80, kan de MSX Pico er **niet** meer bij!
-> - **Geen HTTPS:** Gebruik altijd `http://` en **nooit** `https://` (MSX hardware ondersteunt geen moderne encryptie).
-> - **Afsluitende slash:** Sluit het adres altijd af met een slash (`/`), dus `http://192.168.1.150/`.
-> - **Geen spaties of extra regels:** Plaats geen spaties voor of na de link en druk niet op Enter voor lege regels.
-> - **Pas op voor dubbele extensies:** Let op in Windows dat het bestand niet stiekem `URL.TXT.txt` heet.
+> **Essential rules for `URL.TXT`:**
+> - **Must use Port 80 (HTTP):** MSX Pico firmware strictly expects standard port **80** (`http://`). The Pico **cannot** handle custom port numbers (such as `:8080`) in the URL. If you change the server port to anything other than 80, the MSX Pico will **fail to connect**!
+> - **No HTTPS:** Always use `http://` and **never** `https://` (retro MSX hardware does not support modern SSL/TLS encryption).
+> - **Trailing slash:** Always end the URL with a trailing slash (`/`), e.g., `http://192.168.1.150/`.
+> - **No spaces or empty lines:** Do not include spaces before/after the URL or extra line breaks.
+> - **Watch out for hidden extensions:** Ensure Windows doesn't save the file as `URL.TXT.txt` (enable "File name extensions" in Windows Explorer).
 
-### Stap 4: Plaats de SD-kaart terug in je MSX Pico
-Ontkoppel de SD-kaart veilig, steek hem in de MSX Pico cartridge en zet je MSX aan. Als de Pico en je computer met hetzelfde Wi-Fi-netwerk zijn verbonden, verschijnt je spellenlijst direct op het scherm!
+### Step 4: Put the SD card back into your MSX Pico
+Safely eject the SD card, insert it into your MSX Pico cartridge, and turn on your MSX computer. As long as your MSX Pico and server are connected to the same Wi-Fi network, your game list will appear on screen!
 
 ---
 
-## 🚀 Server Opstarten met Docker
+## 🚀 Running the Server with Docker
 
-Docker is de snelste en makkelijkste manier om de server te draaien.
+Docker is the quickest and easiest way to deploy the server.
 
-### Wat heb je nodig?
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (geïnstalleerd en geopend op je pc of Mac).
+### Prerequisites
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (installed and running).
 
-### Installatie in 3 stappen:
-1. **Download of kloon deze repository:**
+### Quickstart in 3 steps:
+1. **Clone this repository:**
    ```bash
    git clone https://github.com/msx-hws/msx-pico-station.git
    cd msx-pico-station
    ```
-2. **Kopieer het configuratiebestand:**
+2. **Copy the environment configuration:**
    ```bash
    cp .env.example .env
    ```
-   *(Standaard staat `HOST_PORT=80` ingesteld. **Laat dit op poort 80 staan**, want de MSX Pico kan alleen verbinding maken via poort 80 en ondersteunt geen aangepaste poorten!).*
-3. **Start de server:**
+   *(By default, `HOST_PORT=80` is configured. **Leave this on port 80**, as the MSX Pico requires port 80 and does not support custom ports).*
+3. **Start the container:**
    ```bash
    docker compose up -d
    ```
 
-Klaar! Open nu in je browser:
-- Webinterface: `http://localhost/` (of het lokale IP van je server)
-- Bestandsbeheer: `http://localhost/manage`
-- **Swagger API Documentatie:** `http://localhost/docs` (of `http://localhost/swagger`)
+All done! Open your browser:
+- Web Interface: `http://localhost/` (or your server's local IP)
+- File Manager: `http://localhost/manage`
+- **Swagger API Docs:** `http://localhost/docs` (or `http://localhost/swagger`)
 
 ---
 
-## 📖 API & Swagger Documentatie
+## 📖 API & Swagger Documentation
 
-De server beschikt over een complete REST API voor het automatiseren en beheren van bestanden:
-- **`GET /api/files`** — Overzicht van alle bestanden en mappen (JSON).
-- **`POST /api/upload`** — Nieuw bestand uploaden (multipart form-data).
-- **`GET /api/download/<pad>`** — Bestand downloaden.
-- **`DELETE /api/delete`** — Bestand of map verwijderen.
-- **`GET /index2.php`** — De legacy MSX directory-listing en download interface.
+The server provides a full REST API for automation and file management:
+- **`GET /api/files`** — Retrieve a structured JSON list of all files and folders.
+- **`POST /api/upload`** — Upload a new file (multipart form-data).
+- **`GET /api/download/<path>`** — Download a specific file.
+- **`DELETE /api/delete`** — Delete a file or directory.
+- **`GET /index2.php`** — Legacy MSX hardware directory listing and download endpoint.
 
-👉 **Interactief testen:** Ga in je browser naar [`/docs`](http://localhost:5001/docs) of [`/swagger`](http://localhost:5001/swagger) om de ingebouwde **Swagger UI** te openen. Hier kun je live requests versturen en zien hoe de API reageert. De OpenAPI 3.0 specificatie vind je ook als bestand in [`docs/openapi.yaml`](docs/openapi.yaml).
+👉 **Interactive Testing:** Visit [`/docs`](http://localhost:5001/docs) or [`/swagger`](http://localhost:5001/swagger) in your browser to use the built-in **Swagger UI**. You can send live requests and inspect responses directly. The OpenAPI 3.0 specification is available at [`docs/openapi.yaml`](docs/openapi.yaml).
 
 ---
 
-## 🔧 Problemen Oplossen (Troubleshooting)
+## 🔧 Troubleshooting
 
-Lukt het verbinden niet, geeft Docker een foutmelding of start een spel niet? 
-Bekijk dan onze uitgebreide storingsgids:
+Having trouble connecting, encountering a Docker issue, or seeing a black screen on your MSX?
+Check out our comprehensive troubleshooting guide:
 
-👉 **[docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)**
+👉 **[docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)** *(Dutch version: [docs/TROUBLESHOOTING.nl.md](docs/TROUBLESHOOTING.nl.md))*
 
-Hierin vind je oplossingen voor:
-- MSX Pico die geen verbinding krijgt met het Wi-Fi-netwerk of server.
-- Verkeerde poort- of firewall-instellingen op Windows en Mac.
-- Docker foutmeldingen zoals poortconflicten (`address already in use`).
-- Bestandsrechten bij het uploaden.
+Topics covered:
+- MSX Pico fails to connect or time-out issues.
+- Port 80 conflicts (`address already in use`) and firewall rules.
+- File upload permissions and naming conventions.
+- ROM padding and mapper compatibility.
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
