@@ -1,4 +1,4 @@
-"""MSX ROM & DSK Server Flask Application Package."""
+"""MSX-Pico-Station Flask Application Package."""
 
 from app.server import app
 

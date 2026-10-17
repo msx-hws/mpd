@@ -1,6 +1,6 @@
-# MSX-Flask Project Architectuur & Beveiliging
+# MSX-Pico-Station Architectuur & Beveiliging
 
-Dit document beschrijft het ontwerp (OpenSpec) voor het msx-flask project. Het bevat de uitwerking van het accountsysteem, IP-beveiliging en infrastructuur-richtlijnen volgens de principes DRY, KISS en Shift Left.
+Dit document beschrijft het ontwerp (OpenSpec) voor het msx-pico-station project. Het bevat de uitwerking van het accountsysteem, IP-beveiliging en infrastructuur-richtlijnen volgens de principes DRY, KISS en Shift Left.
 
 ## 1. Project Principes
 - **KISS (Keep It Simple, Stupid):** We vermijden complexe authenticatieprotocollen zoals OAuth voor de MSX-clients. Authenticatie voor de retro-clients (MSX) gebeurt op basis van het externe IP-adres. De webinterface gebruikt eenvoudige sessie-gebaseerde login.
@@ -23,7 +23,7 @@ Omdat de MSX API verplicht HTTP gebruikt en moderne encryptie ontbreekt, gebruik
 Omdat MSX computers geen moderne HTTPS kunnen afhandelen, moet de communicatie naar de MSX helaas in platte tekst over HTTP. Om dit toch maximaal te beveiligen zonder de rest van je netwerk bloot te stellen, passen we de volgende infrastructuur toe:
 
 ### A. UniFi (Netwerk Laag)
-- **VLAN Isolatie:** Plaats de Linux server die msx-flask draait in een afgeschermd DMZ/IoT VLAN. Deze server mag geen toegang hebben tot de rest van je thuisnetwerk (LAN).
+- **VLAN Isolatie:** Plaats de Linux server die msx-pico-station draait in een afgeschermd DMZ/IoT VLAN. Deze server mag geen toegang hebben tot de rest van je thuisnetwerk (LAN).
 - **GeoIP / Landen Blokkade:** Gebruik UniFi Threat Management of Firewall Rules om inkomend verkeer uit onverwachte landen (zoals Rusland, China) standaard te blokkeren voor poort 80/HTTP.
 - **Port Forwarding:** Forward poort 80 (MSX) en 443 (Webinterface) alleen naar dit specifieke server IP.
 

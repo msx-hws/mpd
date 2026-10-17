@@ -1,7 +1,7 @@
 services:
   web:
     build: .
-    container_name: msx-flask-web
+    container_name: msx-pico-station-web
     ports:
       - "${HOST_PORT:-80}:5001"
     volumes:

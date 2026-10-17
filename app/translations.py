@@ -1,7 +1,7 @@
 TRANSLATIONS = {
     "nl": {
         "badge_text": "MSX2 RETRO SERVER",
-        "home_title": "MSXPico+ File Server",
+        "home_title": "MSX-Pico-Station",
         "home_desc": "Upload en beheer bestanden die je MSXPico+ kan ophalen en openen.",
         "btn_manage": "Bestandsbeheer openen",
         "btn_test_rom": "Test .rom",
@@ -67,7 +67,7 @@ TRANSLATIONS = {
     },
     "en": {
         "badge_text": "MSX2 RETRO SERVER",
-        "home_title": "MSXPico+ File Server",
+        "home_title": "MSX-Pico-Station",
         "home_desc": "Upload and manage files that your MSXPico+ can retrieve and open.",
         "btn_manage": "Open File Manager",
         "btn_test_rom": "Test .rom",

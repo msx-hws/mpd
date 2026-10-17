@@ -1,1 +1,1 @@
-"""Test package for msx-flask."""
+"""Test package for msx-pico-station."""

@@ -191,14 +191,19 @@ class TestAPIEndpoints(unittest.TestCase):
             if os.path.exists(path):
                 os.remove(path)
 
-    def test_homepage_header_link(self):
-        res = self.client.get('/')
+    def test_swagger_and_openapi(self):
+        # 1. Test openapi.yaml route
+        res = self.client.get('/docs/openapi.yaml')
         self.assertEqual(res.status_code, 200)
-        html_content = res.data.decode('utf-8')
-        # Check that header title is enclosed in a link to /
-        self.assertIn('href="/"', html_content)
-        self.assertIn('MSX', html_content)
-        self.assertIn('ROM & DSK Server', html_content)
+        self.assertIn(b'openapi: 3.0.3', res.data)
+        res.close()
+
+        # 2. Test swagger UI routes
+        for url in ('/docs', '/docs/', '/swagger', '/swagger/'):
+            res = self.client.get(url)
+            self.assertEqual(res.status_code, 200)
+            self.assertIn(b'SwaggerUIBundle', res.data)
+            res.close()
 
 if __name__ == "__main__":
     unittest.main()

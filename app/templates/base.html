@@ -39,7 +39,7 @@
         <header class="py-6 border-b border-emerald-900/30 mb-8 flex flex-col sm:flex-row justify-between items-center gap-4 sm:gap-0">
             <a href="{{ url_for('index') }}" class="flex items-center gap-3 group transition-opacity hover:opacity-90 cursor-pointer">
                 <span class="text-3xl">📺</span>
-                <h1 class="text-2xl font-bold tracking-wider text-emerald-50 text-center sm:text-left group-hover:text-emerald-300 transition-colors">MSX <span class="font-normal text-emerald-400 group-hover:text-emerald-300">ROM & DSK Server</span></h1>
+                <h1 class="text-2xl font-bold tracking-wider text-emerald-50 text-center sm:text-left group-hover:text-emerald-300 transition-colors">MSX <span class="font-normal text-emerald-400 group-hover:text-emerald-300">Pico-Station</span></h1>
             </a>
             <div class="flex flex-wrap justify-center items-center gap-4">
                 <div class="flex items-center gap-2">
@@ -50,6 +50,7 @@
                 <div class="flex items-center gap-4">
                     <a href="{{ url_for('index') }}" class="text-emerald-400 hover:text-emerald-200">Home</a>
                     <a href="{{ url_for('manage') }}" class="text-emerald-600 hover:text-emerald-400">Manage</a>
+                    <a href="{{ url_for('swagger_ui') }}" class="text-emerald-600 hover:text-emerald-400">API Docs</a>
                 </div>
             </div>
         </header>
@@ -61,7 +62,7 @@
         
         <!-- Footer -->
         <footer class="py-6 mt-8 border-t border-emerald-900/30 text-center text-xs text-emerald-800">
-            &copy; 2026 MSX ROM & DSK Server
+            &copy; 2026 MSX-Pico-Station
         </footer>
     </div>
 

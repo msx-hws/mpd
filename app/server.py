@@ -52,7 +52,7 @@ stream_handler.setLevel(logging.INFO)
 app.logger.addHandler(file_handler)
 app.logger.addHandler(stream_handler)
 app.logger.setLevel(logging.INFO)
-app.logger.info('msx-flask startup')
+app.logger.info('msx-pico-station startup')
 
 # --- DRY Helpers ---
 
@@ -92,7 +92,7 @@ def _get_version() -> str:
 def _health_payload() -> dict:
     return {
         "status": "ok",
-        "service": "msx-flask",
+        "service": "msx-pico-station",
         "version": _get_version(),
         "hostname": socket.gethostname(),
         "environment": os.getenv("FLASK_ENV", "production"),
@@ -131,7 +131,7 @@ def index():
 @app.route("/health/getstatus")
 def health():
     if not _is_internal_request():
-        return jsonify({"status": "forbidden", "service": "msx-flask"}), 403
+        return jsonify({"status": "forbidden", "service": "msx-pico-station"}), 403
     return jsonify(_health_payload())
 
 @app.route("/manage")
@@ -199,6 +199,58 @@ def delete_item():
     app.logger.info(f"Item deleted: {rel_path} by {request.remote_addr}")
     session['manage_message'] = f"{get_msg('msg_deleted')} /{rel_path}."
     return redirect(url_for('manage'))
+
+# --- API Documentation & Swagger ---
+
+DOCS_DIRECTORY = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "docs"))
+
+@app.route("/docs/openapi.yaml")
+def openapi_spec():
+    yaml_path = os.path.join(DOCS_DIRECTORY, "openapi.yaml")
+    if not os.path.exists(yaml_path):
+        return "Specification not found", 404
+    return send_file(yaml_path, mimetype="text/yaml")
+
+@app.route("/docs")
+@app.route("/docs/")
+@app.route("/swagger")
+@app.route("/swagger/")
+def swagger_ui():
+    html_content = """<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MSX-Flask API - Swagger UI</title>
+    <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css">
+    <link rel="icon" type="image/png" href="https://unpkg.com/swagger-ui-dist@5/favicon-32x32.png" sizes="32x32" />
+    <style>
+        html { box-sizing: border-box; overflow: -moz-scrollbars-vertical; overflow-y: scroll; }
+        *, *:before, *:after { box-sizing: inherit; }
+        body { margin: 0; background: #fafafa; }
+        .topbar { display: none; }
+    </style>
+</head>
+<body>
+    <div id="swagger-ui"></div>
+    <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
+    <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-standalone-preset.js"></script>
+    <script>
+    window.onload = function() {
+        window.ui = SwaggerUIBundle({
+            url: "/docs/openapi.yaml",
+            dom_id: '#swagger-ui',
+            deepLinking: true,
+            presets: [
+                SwaggerUIBundle.presets.apis,
+                SwaggerUIStandalonePreset
+            ],
+            layout: "BaseLayout"
+        });
+    };
+    </script>
+</body>
+</html>"""
+    return Response(html_content, mimetype="text/html")
 
 # --- API Routes ---
 
