@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
-  title: MSX-Pico-Station API
-  description: API for the MSX-Pico-Station server, including IP-based authentication for MSX clients and a web management interface.
+  title: MSX Pico DEVserver API
+  description: API for the MSX Pico DEVserver (mpd) server, including IP-based authentication for MSX clients and a web management interface.
   version: 1.1.0
 servers:
   - url: /

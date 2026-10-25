@@ -1,10 +1,10 @@
-# MSX-Pico-Station
+# MSX Pico DEVserver
 
 [![Language: English](https://img.shields.io/badge/Language-English-blue.svg)](README.md)
 
 *Lees deze documentatie in het Engels: [English](README.md).*
 
-MSX-Pico-Station is een lichtgewicht webserver om MSX ROM-, COM- en DSK-bestanden direct via Wi-Fi te serveren aan je **MSX Pico** (of compatibele flash cartridge), én te beheren via een moderne retro-webinterface.
+**MSX Pico DEVserver** (`mpd`) is een lichtgewicht lokale ontwikkel- & ROM/COM/DSK server om MSX ROM-, COM- en DSK-bestanden direct via Wi-Fi te serveren aan je **MSX Pico** (of compatibele flash cartridge), én te beheren via een moderne retro-webinterface en developer REST API.
 
 ![MSX ROM Server Interface](docs/images/msx_flask_ui.png)
 
@@ -80,8 +80,8 @@ Docker is de snelste en makkelijkste manier om de server te draaien.
 ### Installatie in 3 stappen:
 1. **Download of kloon deze repository:**
    ```bash
-   git clone https://github.com/msx-hws/msx-pico-station.git
-   cd msx-pico-station
+   git clone https://github.com/msx-hws/mpd.git
+   cd mpd
    ```
 2. **Kopieer het configuratiebestand:**
    ```bash
@@ -92,6 +92,7 @@ Docker is de snelste en makkelijkste manier om de server te draaien.
    ```bash
    docker compose up -d
    ```
+   *(De Tailwind CSS wordt tijdens de image-build gecompileerd; geen extra stap nodig. Na wijzigingen aan templates of CSS: `docker compose up -d --build`.)*
 
 Klaar! Open nu in je browser:
 - Webinterface: `http://localhost/` (of het lokale IP van je server)

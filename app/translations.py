@@ -1,7 +1,7 @@
 TRANSLATIONS = {
     "nl": {
         "badge_text": "MSX2 RETRO SERVER",
-        "home_title": "MSX-Pico-Station",
+        "home_title": "MSX Pico DEVserver",
         "home_desc": "Upload en beheer bestanden die je MSXPico+ kan ophalen en openen.",
         "btn_manage": "Bestandsbeheer openen",
         "btn_test_rom": "Test .rom",
@@ -63,11 +63,19 @@ TRANSLATIONS = {
         "recent_downloads": "Recente Downloads",
         "no_recent_uploads": "Geen recente uploads.",
         "no_recent_downloads": "Geen recente downloads.",
-        "uploaded": "Geüpload"
+        "uploaded": "Geüpload",
+        "btn_network_info": "Network & URL.TXT",
+        "network_modal_title": "MSX PICO NETWORK & URL.TXT",
+        "machine_ip": "Machine IP (Host / LAN)",
+        "docker_ip": "Docker IP (Container)",
+        "copy": "Kopiëren",
+        "copied": "Gekopieerd!",
+        "url_txt_preview": "URL.TXT Inhoud",
+        "url_txt_note": "Plaats dit URL.TXT bestand in de FH_FILES/ map op de root van je SD-kaart (bijv. SD:\\FH_FILES\\URL.TXT). De MSX Pico vereist standaard HTTP poort 80 en een afsluitende slash (/)."
     },
     "en": {
         "badge_text": "MSX2 RETRO SERVER",
-        "home_title": "MSX-Pico-Station",
+        "home_title": "MSX Pico DEVserver",
         "home_desc": "Upload and manage files that your MSXPico+ can retrieve and open.",
         "btn_manage": "Open File Manager",
         "btn_test_rom": "Test .rom",
@@ -129,6 +137,14 @@ TRANSLATIONS = {
         "recent_downloads": "Recent Downloads",
         "no_recent_uploads": "No recent uploads.",
         "no_recent_downloads": "No recent downloads.",
-        "uploaded": "Uploaded"
+        "uploaded": "Uploaded",
+        "btn_network_info": "Network & URL.TXT",
+        "network_modal_title": "MSX PICO NETWORK & URL.TXT",
+        "machine_ip": "Machine IP (Host / LAN)",
+        "docker_ip": "Docker IP (Container)",
+        "copy": "Copy",
+        "copied": "Copied!",
+        "url_txt_preview": "URL.TXT Content",
+        "url_txt_note": "Place this URL.TXT file in the FH_FILES/ folder on the root of your SD card (e.g. SD:\\FH_FILES\\URL.TXT). The MSX Pico requires standard HTTP port 80 and a trailing slash (/)."
     }
 }

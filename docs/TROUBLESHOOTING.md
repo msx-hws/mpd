@@ -1,6 +1,6 @@
 # Troubleshooting Guide
 
-This guide helps you identify and resolve common issues with the **MSX-Pico-Station**, **Docker**, and network connectivity with your **MSX Pico / Flash cartridge**.
+This guide helps you identify and resolve common issues with the **MSX Pico DEVserver**, **Docker**, and network connectivity with your **MSX Pico / Flash cartridge**.
 
 *Lees dit document in het Nederlands: [docs/TROUBLESHOOTING.nl.md](TROUBLESHOOTING.nl.md).*
 
@@ -59,7 +59,7 @@ The file `URL.TXT` must strictly follow these requirements:
 #### B. Port 80 is already in use
 - Error message: `bind: address already in use` or `port is already allocated`.
 - Cause: Another application (e.g. Apache, Nginx, Skype, IIS, or another web service) is already listening on port 80.
-- **Important Note for MSX Pico:** The MSX Pico cartridge firmware strictly expects port **80** and cannot connect to custom ports (like `:8080`). The best solution is to stop or reconfigure the other service using port 80 so that `msx-pico-station` can use it.
+- **Important Note for MSX Pico:** The MSX Pico cartridge firmware strictly expects port **80** and cannot connect to custom ports (like `:8080`). The best solution is to stop or reconfigure the other service using port 80 so that `mpd` can use it.
 - *(Only if you are using the server purely via browser/API without an MSX Pico)*: You can change the port in `.env` (e.g. `HOST_PORT=8080`). Remember that doing so breaks compatibility with the MSX Pico hardware!
 
 ---

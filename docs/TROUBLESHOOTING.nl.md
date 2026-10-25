@@ -57,7 +57,7 @@ Het bestand `URL.TXT` moet exact aan de volgende eisen voldoen:
 #### B. Poort 80 is al in gebruik
 - Foutmelding: `bind: address already in use` of `port is already allocated`.
 - Oorzaak: Er draait al een ander programma (zoals Apache, Nginx, Skype, IIS of een andere webserver) op poort 80 van je computer.
-- **Let op voor de MSX Pico:** De MSX Pico cartridge ondersteunt **geen** afwijkende poorten (zoals `:8080`) in de URL en vereist standaard poort `80`. De beste oplossing is daarom om het conflicterende programma op poort 80 te stoppen of te verplaatsen naar een andere poort, zodat `msx-pico-station` poort 80 kan gebruiken.
+- **Let op voor de MSX Pico:** De MSX Pico cartridge ondersteunt **geen** afwijkende poorten (zoals `:8080`) in de URL en vereist standaard poort `80`. De beste oplossing is daarom om het conflicterende programma op poort 80 te stoppen of te verplaatsen naar een andere poort, zodat `mpd` poort 80 kan gebruiken.
 - *(Alleen als je de server puur via de browser/API gebruikt en géén MSX Pico)*: Dan kun je in `.env` de poort wijzigen (bijv. `HOST_PORT=8080`). Zodra je dit doet, kan de MSX Pico er echter **niet** meer bij!
 
 ---

@@ -52,7 +52,7 @@ stream_handler.setLevel(logging.INFO)
 app.logger.addHandler(file_handler)
 app.logger.addHandler(stream_handler)
 app.logger.setLevel(logging.INFO)
-app.logger.info('msx-pico-station startup')
+app.logger.info('mpd startup')
 
 # --- DRY Helpers ---
 
@@ -92,7 +92,7 @@ def _get_version() -> str:
 def _health_payload() -> dict:
     return {
         "status": "ok",
-        "service": "msx-pico-station",
+        "service": "mpd",
         "version": _get_version(),
         "hostname": socket.gethostname(),
         "environment": os.getenv("FLASK_ENV", "production"),
@@ -131,7 +131,7 @@ def index():
 @app.route("/health/getstatus")
 def health():
     if not _is_internal_request():
-        return jsonify({"status": "forbidden", "service": "msx-pico-station"}), 403
+        return jsonify({"status": "forbidden", "service": "mpd"}), 403
     return jsonify(_health_payload())
 
 @app.route("/manage")
@@ -221,8 +221,8 @@ def swagger_ui():
 <head>
     <meta charset="UTF-8">
     <title>MSX-Flask API - Swagger UI</title>
-    <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css">
-    <link rel="icon" type="image/png" href="https://unpkg.com/swagger-ui-dist@5/favicon-32x32.png" sizes="32x32" />
+    <link rel="stylesheet" href="/static/vendor/swagger-ui/swagger-ui.css">
+    <link rel="icon" type="image/png" href="/static/vendor/swagger-ui/favicon-32x32.png" sizes="32x32" />
     <style>
         html { box-sizing: border-box; overflow: -moz-scrollbars-vertical; overflow-y: scroll; }
         *, *:before, *:after { box-sizing: inherit; }
@@ -232,8 +232,8 @@ def swagger_ui():
 </head>
 <body>
     <div id="swagger-ui"></div>
-    <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
-    <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-standalone-preset.js"></script>
+    <script src="/static/vendor/swagger-ui/swagger-ui-bundle.js"></script>
+    <script src="/static/vendor/swagger-ui/swagger-ui-standalone-preset.js"></script>
     <script>
     window.onload = function() {
         window.ui = SwaggerUIBundle({
@@ -252,7 +252,77 @@ def swagger_ui():
 </html>"""
     return Response(html_content, mimetype="text/html")
 
+def get_server_network_ip():
+    """Determine best machine/server IP address for banner injection and network info."""
+    outbound_ip = None
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        outbound_ip = s.getsockname()[0]
+        s.close()
+    except Exception:
+        outbound_ip = None
+
+    if os.path.exists("/.dockerenv"):
+        host_header = request.headers.get("Host", "").split(":")[0].strip() if has_request_context() else ""
+        if host_header:
+            try:
+                ip_cand = ipaddress.ip_address(host_header)
+                if not ip_cand.is_loopback:
+                    return str(ip_cand)
+            except ValueError:
+                pass
+        for target in ("host.docker.internal", "gateway.docker.internal"):
+            try:
+                resolved = socket.gethostbyname(target)
+                if resolved and not resolved.startswith("127."):
+                    return resolved
+            except Exception:
+                pass
+        try:
+            with open("/proc/net/route", "r") as f:
+                for line in f.readlines()[1:]:
+                    fields = line.strip().split()
+                    if len(fields) >= 3 and fields[1] == "00000000":
+                        gw_hex = fields[2]
+                        return socket.inet_ntoa(bytes.fromhex(gw_hex)[::-1])
+        except Exception:
+            pass
+
+    return outbound_ip or "127.0.0.1"
+
+
 # --- API Routes ---
+
+@app.route("/api/network-info", methods=["GET"])
+def api_network_info():
+    """Return machine IP and Docker container IP for URL.TXT configuration."""
+    is_docker = os.path.exists("/.dockerenv")
+    machine_ip = get_server_network_ip()
+    
+    docker_ip = None
+    if is_docker:
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.connect(("8.8.8.8", 80))
+            docker_ip = s.getsockname()[0]
+            s.close()
+        except Exception:
+            docker_ip = None
+
+    port = os.getenv("HOST_PORT", "80")
+    url_txt_machine = f"http://{machine_ip}/" if machine_ip else ""
+    url_txt_docker = f"http://{docker_ip}/" if docker_ip else ""
+
+    return jsonify({
+        "success": True,
+        "is_docker": is_docker,
+        "machine_ip": machine_ip,
+        "docker_ip": docker_ip,
+        "host_port": port,
+        "url_txt_machine": url_txt_machine,
+        "url_txt_docker": url_txt_docker
+    })
 
 @app.route("/api/files", methods=["GET"])
 def api_list_files():
@@ -427,17 +497,21 @@ def directory_listing():
     request_char = request.args.get("char", "a")
     download_index = request.args.get("download", None)
 
-    if request_type == "ROM":
-        extensions = [".rom", ".ROM", ".com", ".COM"]
+    if request_type in ("ROM", "COM"):
+        extensions = [".rom", ".com"]
     elif request_type == "DSK":
-        extensions = [".dsk", ".DSK"]
+        extensions = [".dsk"]
     elif request_type == "ALL":
-        extensions = [".rom", ".ROM", ".com", ".COM", ".dsk", ".DSK"]
+        extensions = [".rom", ".com", ".dsk"]
     else:
         app.logger.warning(f"Unsupported type: {request_type}")
-        return f"Error: Unsupported type '{request_type}'. Use ROM, DSK, or ALL.", 400
+        return f"Error: Unsupported type '{request_type}'. Use ROM, COM, DSK, or ALL.", 400
 
-    files = list_file_entries(extensions, request_char=request_char)
+    # Inject a header banner entry showing the server name and IP as the very first entry
+    server_ip = get_server_network_ip()
+    banner_name = f"mpd [{server_ip}]"
+    banner_entry = (banner_name, 0, "", time.time())
+    files = [banner_entry] + list_file_entries(extensions, request_char=request_char)
 
     if download_index is not None:
         if not download_index.isdigit():
@@ -445,6 +519,23 @@ def directory_listing():
         download_idx = int(download_index)
         if not 0 <= download_idx < len(files):
             return f"Error: Invalid download index {download_idx}.", 400
+
+        # If developer/user selects the injected banner entry, return a friendly dummy ROM message
+        if download_idx == 0:
+            banner_msg = f"MSX Pico DEVserver (mpd) active on http://{server_ip}/".encode("utf-8")
+            file_content = banner_msg + b"\0" * (4096 - (len(banner_msg) % 4096))
+            header = f"type:,start:,size:{len(file_content)},name:mpd_info.rom"
+            def generate():
+                yield header.encode("utf-8")
+                yield b"\n"
+                yield file_content
+            response = Response(generate())
+            response.headers["Content-type"] = "text/html; charset=UTF-8"
+            response.headers["Expires"] = "0"
+            response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
+            response.headers["Server"] = "Abyss/2.16.20.2-X2-Win32 AbyssLib/2.16.20.2"
+            response.headers["X-Powered-By"] = "PHP/8.5.5"
+            return response
 
         game_name, size, rel_path, mtime = files[download_idx]
         item_path = safe_path(rel_path)
@@ -459,7 +550,7 @@ def directory_listing():
             except Exception as ex:
                 app.logger.error(f"Failed to record download stats: {ex}")
             
-            if request_type == "ROM":
+            if request_type in ("ROM", "COM"):
                 remainder = len(file_content) % 4096
                 if remainder != 0 or len(file_content) == 0:
                     pad_size = 4096 - remainder if len(file_content) > 0 else 4096
@@ -467,7 +558,7 @@ def directory_listing():
             
             # Use only the base filename in the header to avoid path issues on devices
             safe_filename = os.path.basename(rel_path)
-            if request_type == "ROM" and safe_filename.lower().endswith(".com"):
+            if request_type in ("ROM", "COM") and safe_filename.lower().endswith(".com"):
                 safe_filename = safe_filename[:-4] + ".rom"
                 
             header = f"{'size:' if request_type == 'DSK' else 'type:,start:,size:'}{len(file_content)}{',disks:1' if request_type == 'DSK' else ''},name:{safe_filename}"

@@ -1,7 +1,7 @@
 services:
   web:
     build: .
-    container_name: msx-pico-station-web
+    container_name: mpd-web
     ports:
       - "${HOST_PORT:-80}:5001"
     volumes:

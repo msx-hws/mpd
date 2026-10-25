@@ -205,5 +205,98 @@ class TestAPIEndpoints(unittest.TestCase):
             self.assertIn(b'SwaggerUIBundle', res.data)
             res.close()
 
+    def test_api_network_info(self):
+        res = self.client.get('/api/network-info', headers={'Host': '192.168.1.100'})
+        self.assertEqual(res.status_code, 200)
+        data = res.get_json()
+        self.assertTrue(data['success'])
+        self.assertIn('docker_ip', data)
+        self.assertIn('machine_ip', data)
+        self.assertEqual(data['machine_ip'], '192.168.1.100')
+        self.assertEqual(data['url_txt_machine'], 'http://192.168.1.100/')
+        res.close()
+
+    def test_no_remote_sources_and_local_assets_served(self):
+        """UI pages must only reference local assets (no CDN/fonts), and those assets must be served."""
+        import re
+        pages = ['/', '/manage', '/docs']
+        asset_paths = set()
+        for url in pages:
+            res = self.client.get(url)
+            self.assertEqual(res.status_code, 200, url)
+            html = res.data.decode("utf-8")
+            res.close()
+            refs = re.findall(r'(?:src|href)=["\']([^"\']+)["\']', html)
+            refs += re.findall(r'@import\s+(?:url\()?["\']?([^"\')\s;]+)', html)
+            for ref in refs:
+                self.assertNotRegex(ref, r'^(?:https?:)?//', f"Remote source on {url}: {ref}")
+                if ref.startswith('/static/'):
+                    asset_paths.add(ref)
+        self.assertIn('/static/css/style.css', asset_paths)
+        self.assertIn('/static/vendor/swagger-ui/swagger-ui-bundle.js', asset_paths)
+        for path in asset_paths:
+            res = self.client.get(path)
+            self.assertEqual(res.status_code, 200, path)
+            res.close()
+
+    def test_msx_pico_server_info_banner_injected(self):
+        """Verify that server name and IP banner is injected at the top of the MSX listing."""
+        res = self.client.get('/index2.php?type=ROM')
+        self.assertEqual(res.status_code, 200)
+        first_line = res.data.decode("utf-8").split("\n")[0]
+        self.assertTrue(first_line.startswith("mpd ["))
+        
+        # Test downloading banner index 0 returns friendly info ROM
+        res_dl = self.client.get('/index2.php?type=ROM&download=0')
+        self.assertEqual(res_dl.status_code, 200)
+        self.assertIn(b"name:mpd_info.rom", res_dl.data)
+        res_dl.close()
+
+    def test_msx_pico_com_support_and_nested_files_detection(self):
+        """Verify that .com files placed directly in deep subdirectories under files/ are detected and served."""
+        nested_dir = os.path.join(SERVE_DIRECTORY, "dev_builds", "project_x")
+        os.makedirs(nested_dir, exist_ok=True)
+        com_file = os.path.join(nested_dir, "testgame.com")
+        
+        # Write dummy binary content
+        with open(com_file, "wb") as f:
+            f.write(b"\xC9RET_TEST_COM") # Z80 RET instruction + payload
+            
+        try:
+            # 1. Verify index listing for type=ROM
+            res = self.client.get('/index2.php?type=ROM')
+            self.assertEqual(res.status_code, 200)
+            self.assertIn(b"testgame", res.data)
+            
+            # 2. Verify index listing for type=COM
+            res_com = self.client.get('/index2.php?type=COM')
+            self.assertEqual(res_com.status_code, 200)
+            self.assertIn(b"testgame", res_com.data)
+
+            # 3. Download the COM file via /index2.php?type=ROM&download=X
+            # Parse line index
+            lines = res.data.decode("utf-8").strip().split("\n")
+            target_idx = None
+            for idx, line in enumerate(lines):
+                if "testgame" in line:
+                    target_idx = idx
+                    break
+            self.assertIsNotNone(target_idx, "Created .com file was not found in listing!")
+
+            dl_res = self.client.get(f'/index2.php?type=ROM&download={target_idx}')
+            self.assertEqual(dl_res.status_code, 200)
+            # Check header converts to .rom for MSX Pico loader compatibility
+            self.assertIn(b"name:testgame.rom", dl_res.data)
+            # Check padding to 4096 bytes
+            header, content = dl_res.data.split(b"\n", 1)
+            self.assertEqual(len(content), 4096)
+            self.assertTrue(content.startswith(b"\xC9RET_TEST_COM"))
+            dl_res.close()
+        finally:
+            if os.path.exists(com_file):
+                os.remove(com_file)
+            if os.path.exists(nested_dir):
+                os.removedirs(nested_dir)
+
 if __name__ == "__main__":
     unittest.main()

@@ -38,9 +38,10 @@ def timestamp_filename(filename, dt=None):
 
 def list_file_entries(extensions, request_char="a", filter_by_name=True):
     entries = []
+    normalized_exts = tuple(ext.lower() for ext in extensions)
     for root, _, filenames in os.walk(SERVE_DIRECTORY):
         for filename in filenames:
-            if any(filename.endswith(ext) for ext in extensions):
+            if filename.lower().endswith(normalized_exts):
                 file_path = os.path.join(root, filename)
                 if not os.path.isfile(file_path):
                     continue

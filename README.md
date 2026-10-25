@@ -1,10 +1,10 @@
-# MSX-Pico-Station
+# MSX Pico DEVserver
 
-[![Tests](https://github.com/msx-hws/msx-pico-station/actions/workflows/test.yml/badge.svg)](https://github.com/msx-hws/msx-pico-station/actions)
+[![Tests](https://github.com/msx-hws/mpd/actions/workflows/test.yml/badge.svg)](https://github.com/msx-hws/mpd/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Language: Dutch](https://img.shields.io/badge/Language-Nederlands-blue.svg)](README.nl.md)
 
-MSX-Pico-Station is a lightweight web server designed to serve MSX ROM, COM, and DSK files directly over Wi-Fi to your **MSX Pico** (or compatible flash cartridge), with a retro-themed cyberpunk web management interface.
+**MSX Pico DEVserver** (`mpd`) is a lightweight local development & ROM/COM/DSK server designed to serve MSX binaries directly over Wi-Fi to your **MSX Pico** (or compatible flash cartridge), with a retro-themed cyberpunk web management interface and developer REST API.
 
 *Read this documentation in other languages: [Nederlands (Dutch)](README.nl.md).*
 
@@ -82,8 +82,8 @@ Docker is the quickest and easiest way to deploy the server.
 ### Quickstart in 3 steps:
 1. **Clone this repository:**
    ```bash
-   git clone https://github.com/msx-hws/msx-pico-station.git
-   cd msx-pico-station
+   git clone https://github.com/msx-hws/mpd.git
+   cd mpd
    ```
 2. **Copy the environment configuration:**
    ```bash
@@ -94,6 +94,7 @@ Docker is the quickest and easiest way to deploy the server.
    ```bash
    docker compose up -d
    ```
+   *(The Tailwind CSS is compiled during the image build; no extra step needed. After changing templates or CSS, run `docker compose up -d --build`.)*
 
 All done! Open your browser:
 - Web Interface: `http://localhost/` (or your server's local IP)

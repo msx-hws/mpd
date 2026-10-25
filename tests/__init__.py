@@ -1,1 +1,1 @@
-"""Test package for msx-pico-station."""
+"""Test package for mpd."""
