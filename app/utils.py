@@ -1,5 +1,4 @@
 import os
-import re
 import shutil
 import sqlite3
 import html
@@ -35,51 +34,6 @@ def timestamp_filename(filename, dt=None):
         dt = datetime.now()
     timestamp = dt.strftime("%Y%m%d_%H%M%S")
     return f"{timestamp}_{filename}"
-
-def list_file_entries(extensions, request_char="a", filter_by_name=True):
-    entries = []
-    normalized_exts = tuple(ext.lower() for ext in extensions)
-    for root, _, filenames in os.walk(SERVE_DIRECTORY):
-        for filename in filenames:
-            if filename.lower().endswith(normalized_exts):
-                file_path = os.path.join(root, filename)
-                if not os.path.isfile(file_path):
-                    continue
-                rel_path = os.path.relpath(file_path, SERVE_DIRECTORY).replace(os.sep, "/")
-                try:
-                    size = os.path.getsize(file_path)
-                    mtime = os.path.getmtime(file_path)
-                    if filename.lower().endswith('.rom'):
-                        remainder = size % 8192
-                        if remainder != 0 or size == 0:
-                            size += (8192 - remainder) if size > 0 else 8192
-                except (OSError, IOError):
-                    continue
-                
-                # Use only the filename without extension for the display name
-                display_name = os.path.splitext(filename)[0]
-                display_name = display_name.replace(" [original]", "")
-                display_name = re.sub(r"(\]\s)(\[\d+\])$", r"]\2", display_name)
-                
-                if filter_by_name:
-                    search_term_lower = request_char.lower()
-                    display_name_lower = display_name.lower()
-                    if search_term_lower != "a":
-                        if len(search_term_lower) == 1:
-                            if not display_name_lower.startswith(search_term_lower):
-                                continue
-                        else:
-                            if search_term_lower not in display_name_lower:
-                                continue
-                entries.append((display_name, size, rel_path, mtime))
-    unique = []
-    seen = set()
-    for entry in sorted(entries, key=lambda item: (-item[3], item[0], item[2])):
-        key = (entry[0], entry[1], entry[2])
-        if key not in seen:
-            unique.append(entry)
-            seen.add(key)
-    return unique
 
 def list_directory_structured():
     """Returns a list of dictionaries representing the file structure, sorted by path."""

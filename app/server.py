@@ -21,12 +21,12 @@ from app.utils import (
     SERVE_DIRECTORY,
     safe_path,
     timestamp_filename,
-    list_file_entries,
     list_directory_structured,
     get_download_stats,
     record_download,
 )
 from app.translations import TRANSLATIONS
+from app.index2 import create_index2_blueprint
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -488,128 +488,43 @@ def make_dir():
     session['manage_message'] = f"{get_msg('msg_mkdir_success')} /{rel_path}."
     return redirect(url_for('manage'))
 
-@app.route("/index2.php")
-@app.route("/index2.php/")
-def directory_listing():
-    """Return directory listing based on type parameter (ROM, DSK, or ALL)"""
-    app.logger.info(f"API Request: {request.url} from {request.remote_addr} (UA: {request.user_agent})")
-    request_type = request.args.get("type", "ROM").upper()
-    request_char = request.args.get("char", "a")
-    download_index = request.args.get("download", None)
+def _index2_json_listing(files):
+    stats = get_download_stats()
+    json_data = []
+    for game_name, size, rel_path, mtime in files:
+        file_stats = stats.get(rel_path, {"count": 0, "last_downloaded_at": None})
+        json_data.append({
+            "name": game_name,
+            "size": size,
+            "path": rel_path,
+            "downloads": file_stats["count"],
+            "last_downloaded": file_stats["last_downloaded_at"],
+            "uploaded_at": datetime.fromtimestamp(mtime, tz=timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
+        })
+    return json_data
 
-    if request_type in ("ROM", "COM"):
-        extensions = [".rom", ".com"]
-    elif request_type == "DSK":
-        extensions = [".dsk"]
-    elif request_type == "ALL":
-        extensions = [".rom", ".com", ".dsk"]
-    else:
-        app.logger.warning(f"Unsupported type: {request_type}")
-        return f"Error: Unsupported type '{request_type}'. Use ROM, COM, DSK, or ALL.", 400
 
-    # Inject a header banner entry showing the server name and IP as the very first entry
+def _index2_record_download(rel_path, remote_addr):
+    app.logger.info(f"Downloading file: {rel_path} for {remote_addr}")
+    try:
+        record_download(rel_path, remote_addr)
+    except Exception as ex:
+        app.logger.error(f"Failed to record download stats: {ex}")
+
+
+def _index2_banner():
     server_ip = get_server_network_ip()
-    banner_name = f"mpd [{server_ip}]"
-    banner_entry = (banner_name, 0, "", time.time())
-    files = [banner_entry] + list_file_entries(extensions, request_char=request_char)
+    return (f"mpd [{server_ip}]", f"MSX Pico DEVserver (mpd) active on http://{server_ip}/")
 
-    if download_index is not None:
-        if not download_index.isdigit():
-            return f"Error: Invalid download index {download_index}.", 400
-        download_idx = int(download_index)
-        if not 0 <= download_idx < len(files):
-            return f"Error: Invalid download index {download_idx}.", 400
 
-        # If developer/user selects the injected banner entry, return a friendly dummy ROM message
-        if download_idx == 0:
-            banner_msg = f"MSX Pico DEVserver (mpd) active on http://{server_ip}/".encode("utf-8")
-            file_content = banner_msg + b"\0" * (4096 - (len(banner_msg) % 4096))
-            header = f"type:,start:,size:{len(file_content)},name:mpd_info.rom"
-            def generate():
-                yield header.encode("utf-8")
-                yield b"\n"
-                yield file_content
-            response = Response(generate())
-            response.headers["Content-type"] = "text/html; charset=UTF-8"
-            response.headers["Expires"] = "0"
-            response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
-            response.headers["Server"] = "Abyss/2.16.20.2-X2-Win32 AbyssLib/2.16.20.2"
-            response.headers["X-Powered-By"] = "PHP/8.5.5"
-            return response
-
-        game_name, size, rel_path, mtime = files[download_idx]
-        item_path = safe_path(rel_path)
-        app.logger.info(f"Downloading file: {rel_path} for {request.remote_addr}")
-        try:
-            with open(item_path, "rb") as f:
-                file_content = f.read()
-            
-            # Record download statistics
-            try:
-                record_download(rel_path, request.remote_addr)
-            except Exception as ex:
-                app.logger.error(f"Failed to record download stats: {ex}")
-            
-            if request_type in ("ROM", "COM"):
-                remainder = len(file_content) % 4096
-                if remainder != 0 or len(file_content) == 0:
-                    pad_size = 4096 - remainder if len(file_content) > 0 else 4096
-                    file_content += b'\0' * pad_size
-            
-            # Use only the base filename in the header to avoid path issues on devices
-            safe_filename = os.path.basename(rel_path)
-            if request_type in ("ROM", "COM") and safe_filename.lower().endswith(".com"):
-                safe_filename = safe_filename[:-4] + ".rom"
-                
-            header = f"{'size:' if request_type == 'DSK' else 'type:,start:,size:'}{len(file_content)}{',disks:1' if request_type == 'DSK' else ''},name:{safe_filename}"
-
-            def generate():
-                yield header.encode("utf-8")
-                yield b"\n"
-                yield file_content
-
-            response = Response(generate())
-            response.headers["Content-type"] = "text/html; charset=UTF-8"
-            response.headers["Expires"] = "0"
-            response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
-            response.headers["Server"] = "Abyss/2.16.20.2-X2-Win32 AbyssLib/2.16.20.2"
-            response.headers["X-Powered-By"] = "PHP/8.5.5"
-            return response
-        except (OSError, IOError) as e:
-            app.logger.error(f"Error reading file {item_path}: {e}")
-            return f"Error reading file: {str(e)}", 500
-
-    if request.args.get("web") == "1" or request.args.get("format") == "json":
-        stats = get_download_stats()
-        json_data = []
-        for game_name, size, rel_path, mtime in files:
-            file_stats = stats.get(rel_path, {"count": 0, "last_downloaded_at": None})
-            uploaded_at_str = datetime.fromtimestamp(mtime, tz=timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
-            json_data.append({
-                "name": game_name,
-                "size": size,
-                "path": rel_path,
-                "downloads": file_stats["count"],
-                "last_downloaded": file_stats["last_downloaded_at"],
-                "uploaded_at": uploaded_at_str
-            })
-        response = Response(json.dumps(json_data), mimetype="application/json")
-        response.headers["Expires"] = "0"
-        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
-        return response
-
-    result = "".join(f"{game_name}\t{size}\n" for game_name, size, _, _ in files) if files else "No files found\t0\n"
-
-    def generate_listing():
-        yield result.encode("utf-8")
-
-    response = Response(generate_listing())
-    response.headers["Content-type"] = "text/html; charset=UTF-8"
-    response.headers["Expires"] = "0"
-    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
-    response.headers["Server"] = "Abyss/2.16.20.2-X2-Win32 AbyssLib/2.16.20.2"
-    response.headers["X-Powered-By"] = "PHP/8.5.5"
-    return response
+app.register_blueprint(create_index2_blueprint(
+    get_root_dir=lambda: SERVE_DIRECTORY,
+    get_banner=_index2_banner,
+    on_request=lambda req: app.logger.info(
+        f"API Request: {req.url} from {req.remote_addr} (UA: {req.user_agent})"),
+    on_download=_index2_record_download,
+    json_listing=_index2_json_listing,
+))
 
 @app.route("/<path:path>")
 def catch_all(path):

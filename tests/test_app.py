@@ -239,6 +239,13 @@ class TestAPIEndpoints(unittest.TestCase):
             self.assertEqual(res.status_code, 200, path)
             res.close()
 
+    def test_index2_json_listing_has_no_banner(self):
+        """The web UI JSON listing must only contain real files, never the info banner."""
+        res = self.client.get('/index2.php?type=ALL&web=1')
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.mimetype, "application/json")
+        self.assertFalse(any(item["name"].startswith("mpd [") for item in res.get_json()))
+
     def test_msx_pico_server_info_banner_injected(self):
         """Verify that server name and IP banner is injected at the top of the MSX listing."""
         res = self.client.get('/index2.php?type=ROM')
@@ -249,7 +256,7 @@ class TestAPIEndpoints(unittest.TestCase):
         # Test downloading banner index 0 returns friendly info ROM
         res_dl = self.client.get('/index2.php?type=ROM&download=0')
         self.assertEqual(res_dl.status_code, 200)
-        self.assertIn(b"name:mpd_info.rom", res_dl.data)
+        self.assertIn(b"name:server_info.rom", res_dl.data)
         res_dl.close()
 
     def test_msx_pico_com_support_and_nested_files_detection(self):
