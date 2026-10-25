@@ -72,6 +72,10 @@ TRANSLATIONS = {
         "copied": "Gekopieerd!",
         "url_txt_preview": "URL.TXT Inhoud",
         "url_txt_note": "Plaats dit URL.TXT bestand in de FH_FILES/ map op de root van je SD-kaart (bijv. SD:\\FH_FILES\\URL.TXT). De MSX Pico vereist standaard HTTP poort 80 en een afsluitende slash (/)."
+        ,
+        "menu_system": "Systeem",
+        "menu_manage": "Bestandsbeheer",
+        "menu_api_docs": "API Docs"
     },
     "en": {
         "badge_text": "MSX2 RETRO SERVER",
@@ -146,5 +150,9 @@ TRANSLATIONS = {
         "copied": "Copied!",
         "url_txt_preview": "URL.TXT Content",
         "url_txt_note": "Place this URL.TXT file in the FH_FILES/ folder on the root of your SD card (e.g. SD:\\FH_FILES\\URL.TXT). The MSX Pico requires standard HTTP port 80 and a trailing slash (/)."
+        ,
+        "menu_system": "System",
+        "menu_manage": "Manage",
+        "menu_api_docs": "API Docs"
     }
 }

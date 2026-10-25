@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block title %}API Docs - {{ _('home_title') }}{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='vendor/swagger-ui/swagger-ui.css') }}">
+<style>
+    /* Dark retro styling for Swagger UI in MPD */
+    .swagger-ui {
+        color: #d1fae5;
+        font-family: var(--font-mono, monospace);
+    }
+    .swagger-ui .info {
+        margin: 20px 0;
+    }
+    .swagger-ui .info .title {
+        color: #6ee7b7 !important;
+        font-family: inherit;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+    }
+    .swagger-ui .info p, .swagger-ui .info li, .swagger-ui .info table {
+        color: #a7f3d0 !important;
+    }
+    .swagger-ui .info a {
+        color: #34d399 !important;
+    }
+    .swagger-ui .scheme-container {
+        background: rgba(0, 0, 0, 0.4) !important;
+        box-shadow: none !important;
+        border: 1px solid rgba(6, 78, 59, 0.4);
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    .swagger-ui select {
+        background: #050505 !important;
+        color: #6ee7b7 !important;
+        border: 1px solid #065f46 !important;
+        font-family: inherit;
+    }
+    .swagger-ui .opblock-tag {
+        color: #34d399 !important;
+        font-family: inherit;
+        border-bottom: 1px solid rgba(6, 78, 59, 0.4) !important;
+    }
+    .swagger-ui .opblock {
+        background: rgba(0, 0, 0, 0.6) !important;
+        border: 1px solid #065f46 !important;
+        box-shadow: none !important;
+        border-radius: 2px !important;
+    }
+    .swagger-ui .opblock .opblock-summary-method {
+        font-family: inherit;
+        font-weight: 700;
+        border-radius: 2px;
+    }
+    .swagger-ui .opblock .opblock-summary-path,
+    .swagger-ui .opblock .opblock-summary-path__deprecated {
+        color: #d1fae5 !important;
+        font-family: inherit;
+    }
+    .swagger-ui .opblock .opblock-summary-description {
+        color: #6ee7b7 !important;
+        font-family: inherit;
+    }
+    .swagger-ui .opblock-body {
+        background: rgba(5, 5, 5, 0.9) !important;
+        color: #d1fae5 !important;
+    }
+    .swagger-ui .opblock-section-header {
+        background: rgba(6, 78, 59, 0.25) !important;
+        border-bottom: 1px solid #065f46 !important;
+    }
+    .swagger-ui .opblock-section-header h4 {
+        color: #a7f3d0 !important;
+        font-family: inherit;
+    }
+    .swagger-ui table thead tr td, .swagger-ui table thead tr th {
+        color: #34d399 !important;
+        border-bottom: 1px solid #065f46 !important;
+        font-family: inherit;
+    }
+    .swagger-ui .parameter__name {
+        color: #6ee7b7 !important;
+        font-family: inherit;
+    }
+    .swagger-ui .parameter__type {
+        color: #10b981 !important;
+        font-family: inherit;
+    }
+    .swagger-ui .parameter__deprecated {
+        color: #ef4444 !important;
+    }
+    .swagger-ui input[type=text], .swagger-ui textarea {
+        background: #000 !important;
+        color: #6ee7b7 !important;
+        border: 1px solid #065f46 !important;
+        font-family: inherit;
+    }
+    .swagger-ui .btn {
+        background: rgba(6, 78, 59, 0.3) !important;
+        color: #6ee7b7 !important;
+        border: 1px solid #059669 !important;
+        font-family: inherit;
+        border-radius: 2px;
+    }
+    .swagger-ui .btn:hover {
+        background: #059669 !important;
+        color: #050505 !important;
+    }
+    .swagger-ui .btn.execute {
+        background-color: #047857 !important;
+        color: #fff !important;
+        border-color: #10b981 !important;
+    }
+    .swagger-ui .response-col_status {
+        color: #34d399 !important;
+        font-family: inherit;
+    }
+    .swagger-ui .response-col_description__inner div.markdown, 
+    .swagger-ui .response-col_description__inner div.renderedMarkdown {
+        color: #d1fae5 !important;
+    }
+    .swagger-ui section.models {
+        border: 1px solid rgba(6, 78, 59, 0.4) !important;
+        background: rgba(0, 0, 0, 0.4) !important;
+    }
+    .swagger-ui section.models h4 {
+        color: #34d399 !important;
+        border-bottom: 1px solid rgba(6, 78, 59, 0.4) !important;
+        font-family: inherit;
+    }
+    .swagger-ui section.models .model-container {
+        background: rgba(5, 5, 5, 0.8) !important;
+    }
+    .swagger-ui .model-title {
+        color: #6ee7b7 !important;
+    }
+    .swagger-ui .model {
+        color: #a7f3d0 !important;
+    }
+    .swagger-ui pre {
+        background: #000 !important;
+        color: #6ee7b7 !important;
+        border: 1px solid #065f46 !important;
+        font-family: inherit;
+    }
+    .swagger-ui .topbar { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="p-6 bg-black/40 border border-emerald-900/40 rounded-sm flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div>
+            <h2 class="text-xl text-emerald-300 font-bold uppercase tracking-widest text-center sm:text-left">
+                > {{ _('menu_api_docs') }}
+            </h2>
+            <p class="text-xs text-emerald-600 font-mono mt-1">
+                REST &amp; MSXPico API SPECIFICATION (OPENAPI 3.0.3)
+            </p>
+        </div>
+        <div class="flex items-center gap-2">
+            <a href="/docs/openapi.yaml" download class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-950/40 border border-emerald-700/60 text-emerald-300 hover:bg-emerald-800/50 hover:text-emerald-100 rounded text-xs font-bold font-mono uppercase tracking-wider transition-colors cursor-pointer">
+                <span>📄</span> OPENAPI.YAML
+            </a>
+        </div>
+    </div>
+
+    <div class="p-4 sm:p-6 bg-black/40 border border-emerald-900/40 rounded-sm">
+        <div id="swagger-ui"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='vendor/swagger-ui/swagger-ui-bundle.js') }}"></script>
+<script src="{{ url_for('static', filename='vendor/swagger-ui/swagger-ui-standalone-preset.js') }}"></script>
+<script>
+window.onload = function() {
+    window.ui = SwaggerUIBundle({
+        url: "/docs/openapi.yaml",
+        dom_id: '#swagger-ui',
+        deepLinking: true,
+        presets: [
+            SwaggerUIBundle.presets.apis,
+            SwaggerUIStandalonePreset
+        ],
+        layout: "BaseLayout"
+    });
+};
+</script>
+{% endblock %}

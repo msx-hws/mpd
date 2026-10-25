@@ -216,41 +216,7 @@ def openapi_spec():
 @app.route("/swagger")
 @app.route("/swagger/")
 def swagger_ui():
-    html_content = """<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>MSX-Flask API - Swagger UI</title>
-    <link rel="stylesheet" href="/static/vendor/swagger-ui/swagger-ui.css">
-    <link rel="icon" type="image/png" href="/static/vendor/swagger-ui/favicon-32x32.png" sizes="32x32" />
-    <style>
-        html { box-sizing: border-box; overflow: -moz-scrollbars-vertical; overflow-y: scroll; }
-        *, *:before, *:after { box-sizing: inherit; }
-        body { margin: 0; background: #fafafa; }
-        .topbar { display: none; }
-    </style>
-</head>
-<body>
-    <div id="swagger-ui"></div>
-    <script src="/static/vendor/swagger-ui/swagger-ui-bundle.js"></script>
-    <script src="/static/vendor/swagger-ui/swagger-ui-standalone-preset.js"></script>
-    <script>
-    window.onload = function() {
-        window.ui = SwaggerUIBundle({
-            url: "/docs/openapi.yaml",
-            dom_id: '#swagger-ui',
-            deepLinking: true,
-            presets: [
-                SwaggerUIBundle.presets.apis,
-                SwaggerUIStandalonePreset
-            ],
-            layout: "BaseLayout"
-        });
-    };
-    </script>
-</body>
-</html>"""
-    return Response(html_content, mimetype="text/html")
+    return render_template("docs.html")
 
 def get_server_network_ip():
     """Determine best machine/server IP address for banner injection and network info."""

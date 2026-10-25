@@ -38,6 +38,10 @@ def timestamp_filename(filename, dt=None):
 def list_directory_structured():
     """Returns a list of dictionaries representing the file structure, sorted by path."""
     items = []
+    if not os.path.exists(SERVE_DIRECTORY):
+        os.makedirs(SERVE_DIRECTORY, exist_ok=True)
+        return items
+
     # Add root files first
     for entry in os.scandir(SERVE_DIRECTORY):
         if entry.is_file():
