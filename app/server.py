@@ -29,7 +29,31 @@ from app.translations import TRANSLATIONS
 from app.index2 import create_index2_blueprint
 
 app = Flask(__name__)
-app.secret_key = os.urandom(24)
+
+def _get_or_create_secret_key():
+    env_key = os.environ.get('SECRET_KEY')
+    if env_key:
+        return env_key
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.dirname(base_dir)
+    key_file = os.path.join(project_root, '.secret_key')
+    if os.path.exists(key_file):
+        try:
+            with open(key_file, 'rb') as f:
+                content = f.read().strip()
+                if content:
+                    return content
+        except Exception:
+            pass
+    new_key = os.urandom(24)
+    try:
+        with open(key_file, 'wb') as f:
+            f.write(new_key)
+    except Exception:
+        pass
+    return new_key
+
+app.secret_key = _get_or_create_secret_key()
 APP_START_TIME = time.monotonic()
 
 # --- Logging Configuration ---
@@ -217,6 +241,12 @@ def openapi_spec():
 @app.route("/swagger/")
 def swagger_ui():
     return render_template("docs.html")
+
+@app.route("/about")
+@app.route("/about/")
+def about():
+    system_info = _health_payload()
+    return render_template("about.html", system_info=system_info)
 
 def get_server_network_ip():
     """Determine best machine/server IP address for banner injection and network info."""

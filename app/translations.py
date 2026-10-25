@@ -3,7 +3,7 @@ TRANSLATIONS = {
         "badge_text": "MSX2 RETRO SERVER",
         "home_title": "MSX Pico DEVserver",
         "home_desc": "Upload en beheer bestanden die je MSXPico+ kan ophalen en openen.",
-        "btn_manage": "Bestandsbeheer openen",
+        "btn_manage": "Bestandsbeheer",
         "btn_test_rom": "Test .rom",
         "btn_test_dsk": "Test .dsk",
         "api_endpoint": "API endpoint",
@@ -75,13 +75,20 @@ TRANSLATIONS = {
         ,
         "menu_system": "Systeem",
         "menu_manage": "Bestandsbeheer",
-        "menu_api_docs": "API Docs"
+        "menu_api_docs": "API Docs",
+        "menu_about": "Over & Documentatie",
+        "about_title": "Over MSX Pico DEVserver",
+        "about_subtitle": "SYSTEEM DOCUMENTATIE & GEBRUIKERSHANDLEIDING",
+        "user_guide_title": "Gebruikershandleiding",
+        "url_txt_guide_title": "MSX Pico & URL.TXT Setup",
+        "api_guide_title": "API & Ontwikkeling",
+        "system_status_title": "Systeeminformatie"
     },
     "en": {
         "badge_text": "MSX2 RETRO SERVER",
         "home_title": "MSX Pico DEVserver",
         "home_desc": "Upload and manage files that your MSXPico+ can retrieve and open.",
-        "btn_manage": "Open File Manager",
+        "btn_manage": "File Manager",
         "btn_test_rom": "Test .rom",
         "btn_test_dsk": "Test .dsk",
         "api_endpoint": "API endpoint",
@@ -153,6 +160,13 @@ TRANSLATIONS = {
         ,
         "menu_system": "System",
         "menu_manage": "Manage",
-        "menu_api_docs": "API Docs"
+        "menu_api_docs": "API Docs",
+        "menu_about": "About & Docs",
+        "about_title": "About MSX Pico DEVserver",
+        "about_subtitle": "SYSTEM DOCUMENTATION & USER GUIDE",
+        "user_guide_title": "User Guide",
+        "url_txt_guide_title": "MSX Pico & URL.TXT Setup",
+        "api_guide_title": "API & Development",
+        "system_status_title": "System Information"
     }
 }

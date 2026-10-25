@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('about_title') }} - MSX Pico DEVserver{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    
+    <!-- Header banner -->
+    <div class="p-6 bg-black/40 border border-emerald-900/40 rounded-sm flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div>
+            <h2 class="text-xl text-emerald-300 font-bold uppercase tracking-widest text-center sm:text-left">
+                > {{ _('about_title') }}
+            </h2>
+            <p class="text-xs text-emerald-600 font-mono mt-1">
+                {{ _('about_subtitle') }}
+            </p>
+        </div>
+        <div class="flex items-center gap-2">
+            <span class="text-xs font-mono px-2.5 py-1 bg-emerald-950/60 border border-emerald-700/60 text-emerald-300 rounded uppercase">v{{ system_info.version }}</span>
+        </div>
+    </div>
+
+    <!-- Section: What is MPD & User Guide -->
+    <div class="p-6 bg-black/40 border border-emerald-900/40 rounded-sm space-y-4">
+        <h3 class="text-lg text-emerald-300 font-bold uppercase tracking-widest border-b border-emerald-900/40 pb-3 flex items-center gap-2">
+            <span>💡</span> {{ _('user_guide_title') }}
+        </h3>
+        
+        <div class="text-emerald-100/90 text-sm leading-relaxed space-y-3 font-mono">
+            {% if current_lang == 'nl' %}
+            <p>
+                <strong class="text-emerald-300">MSX Pico DEVserver (mpd)</strong> is een lichtgewicht ontwikkel- en ROM/COM/DSK server ontworpen om MSX programma's en diskette-images via Wi-Fi direct beschikbaar te maken voor je <strong class="text-emerald-300">MSX Pico</strong> (of compatibele flash cartridge).
+            </p>
+            <ul class="list-disc list-inside space-y-1.5 text-emerald-200/80 pl-2">
+                <li><strong class="text-emerald-300">Geen SD-kaart wissels:</strong> Upload je MSX `.rom`, `.com` of `.dsk` bestanden via de beheerpagina of direct via de REST API.</li>
+                <li><strong class="text-emerald-300">Automatische ROM Padding:</strong> MSX Pico hardware vereist dat ROM-bestanden minstens 4096 bytes (0x1000) groot zijn. MPD vult te kleine ROMs direct tijdens de overdracht aan zonder het bronbestand aan te passen.</li>
+                <li><strong class="text-emerald-300">MSX-DOS .COM Support:</strong> MSX-DOS executable bestanden (`.com`) kunnen direct via de MSX Pico cartridge worden ingeladen.</li>
+            </ul>
+            {% else %}
+            <p>
+                <strong class="text-emerald-300">MSX Pico DEVserver (mpd)</strong> is a lightweight local development &amp; ROM/COM/DSK server designed to serve MSX binaries directly over Wi-Fi to your <strong class="text-emerald-300">MSX Pico</strong> (or compatible flash cartridge).
+            </p>
+            <ul class="list-disc list-inside space-y-1.5 text-emerald-200/80 pl-2">
+                <li><strong class="text-emerald-300">No SD Card Swapping:</strong> Upload your MSX `.rom`, `.com`, or `.dsk` files via the file manager or directly through the REST API.</li>
+                <li><strong class="text-emerald-300">Automatic ROM Padding:</strong> MSX Pico hardware requires `.rom` files to be at least 4096 bytes (0x1000). MPD automatically pads smaller ROMs on the fly during transfer without modifying original files.</li>
+                <li><strong class="text-emerald-300">MSX-DOS .COM Support:</strong> MSX-DOS executable files (`.com`) can be loaded directly through the MSX Pico cartridge interface.</li>
+            </ul>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Section: URL.TXT Setup Guide -->
+    <div class="p-6 bg-black/40 border border-emerald-900/40 rounded-sm space-y-4">
+        <h3 class="text-lg text-emerald-300 font-bold uppercase tracking-widest border-b border-emerald-900/40 pb-3 flex items-center gap-2">
+            <span>🕹️</span> {{ _('url_txt_guide_title') }}
+        </h3>
+
+        <div class="space-y-4 text-sm font-mono text-emerald-100/90 leading-relaxed">
+            {% if current_lang == 'nl' %}
+            <ol class="list-decimal list-inside space-y-3 text-emerald-200/85">
+                <li><strong class="text-emerald-300">Plaats de micro-SD kaart in je computer.</strong></li>
+                <li><strong class="text-emerald-300">Open of maak de map <code class="text-emerald-400 bg-black/80 px-1.5 py-0.5 border border-emerald-800">FH_FILES</code></strong> in de root van de SD-kaart (hoofdletters verplicht).</li>
+                <li><strong class="text-emerald-300">Maak het bestand <code class="text-emerald-400 bg-black/80 px-1.5 py-0.5 border border-emerald-800">URL.TXT</code></strong> aan binnen <code class="text-emerald-400">FH_FILES/</code>.</li>
+                <li><strong class="text-emerald-300">Voer de server URL in:</strong> Vul alleen het HTTP-adres in met een afsluitende slash (bijv. <code class="text-emerald-300">http://192.168.1.4/</code> of klik op de <em>Network &amp; URL.TXT</em> knop bovenaan om het IP automatisch te detecteren en kopiëren).</li>
+            </ol>
+            {% else %}
+            <ol class="list-decimal list-inside space-y-3 text-emerald-200/85">
+                <li><strong class="text-emerald-300">Insert your micro-SD card into your computer.</strong></li>
+                <li><strong class="text-emerald-300">Open or create the <code class="text-emerald-400 bg-black/80 px-1.5 py-0.5 border border-emerald-800">FH_FILES</code> folder</strong> on the root of your SD card (must be uppercase).</li>
+                <li><strong class="text-emerald-300">Create a file named <code class="text-emerald-400 bg-black/80 px-1.5 py-0.5 border border-emerald-800">URL.TXT</code></strong> inside <code class="text-emerald-400">FH_FILES/</code>.</li>
+                <li><strong class="text-emerald-300">Enter the server URL:</strong> Write only the HTTP address with a trailing slash (e.g. <code class="text-emerald-300">http://192.168.1.4/</code> or use the <em>Network &amp; URL.TXT</em> button in the header to auto-detect and copy).</li>
+            </ol>
+            {% endif %}
+            
+            <div class="bg-black/80 border border-emerald-800 p-3 rounded-sm text-xs text-emerald-400">
+                <span class="text-emerald-300 font-bold">ℹ️ NOTE:</span> De MSX Pico cartridge firmware ondersteunt uitsluitend standaard HTTP poort 80 (geen HTTPS encryptie).
+            </div>
+        </div>
+    </div>
+
+    <!-- Section: API & Development -->
+    <div class="p-6 bg-black/40 border border-emerald-900/40 rounded-sm space-y-4">
+        <h3 class="text-lg text-emerald-300 font-bold uppercase tracking-widest border-b border-emerald-900/40 pb-3 flex items-center gap-2">
+            <span>⚡</span> {{ _('api_guide_title') }}
+        </h3>
+
+        <div class="space-y-3 text-sm font-mono text-emerald-100/90 leading-relaxed">
+            <p>
+                Volledige interactieve Swagger / OpenAPI specificatie is direct te raadplegen via:
+                <a href="{{ url_for('swagger_ui') }}" class="text-emerald-400 font-bold underline hover:text-emerald-200 ml-1">/docs &rarr;</a>
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 text-xs">
+                <div class="p-3 bg-black/60 border border-emerald-900/60 rounded-sm">
+                    <span class="text-emerald-400 font-bold">GET /index2.php</span>
+                    <p class="text-emerald-600 mt-1">MSX Pico hardware protocol voor ROM/COM/DSK directory listings en downloads.</p>
+                </div>
+                <div class="p-3 bg-black/60 border border-emerald-900/60 rounded-sm">
+                    <span class="text-emerald-400 font-bold">GET /api/files</span>
+                    <p class="text-emerald-600 mt-1">Gestructureerde JSON file tree voor web apps en developer tooling.</p>
+                </div>
+                <div class="p-3 bg-black/60 border border-emerald-900/60 rounded-sm">
+                    <span class="text-emerald-400 font-bold">POST /api/upload</span>
+                    <p class="text-emerald-600 mt-1">Multipart file upload met optionele doelmap ondersteuning.</p>
+                </div>
+                <div class="p-3 bg-black/60 border border-emerald-900/60 rounded-sm">
+                    <span class="text-emerald-400 font-bold">GET /api/download</span>
+                    <p class="text-emerald-600 mt-1">Directe binary download stream per bestandspad.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section: System Information -->
+    <div class="p-6 bg-black/40 border border-emerald-900/40 rounded-sm space-y-4">
+        <h3 class="text-lg text-emerald-300 font-bold uppercase tracking-widest border-b border-emerald-900/40 pb-3 flex items-center gap-2">
+            <span>🖥️</span> {{ _('system_status_title') }}
+        </h3>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs font-mono">
+            <div class="p-3 bg-black/60 border border-emerald-900/60 rounded-sm">
+                <span class="text-emerald-700 block text-[10px] uppercase font-bold">SERVICE</span>
+                <span class="text-emerald-300 text-sm font-bold">{{ system_info.service }}</span>
+            </div>
+            <div class="p-3 bg-black/60 border border-emerald-900/60 rounded-sm">
+                <span class="text-emerald-700 block text-[10px] uppercase font-bold">VERSION</span>
+                <span class="text-emerald-300 text-sm font-bold">{{ system_info.version }}</span>
+            </div>
+            <div class="p-3 bg-black/60 border border-emerald-900/60 rounded-sm">
+                <span class="text-emerald-700 block text-[10px] uppercase font-bold">HOST</span>
+                <span class="text-emerald-300 text-sm font-bold">{{ system_info.hostname }}</span>
+            </div>
+            <div class="p-3 bg-black/60 border border-emerald-900/60 rounded-sm">
+                <span class="text-emerald-700 block text-[10px] uppercase font-bold">UPTIME</span>
+                <span class="text-emerald-300 text-sm font-bold">{{ system_info.uptime_seconds }}s</span>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,6 +1,7 @@
 # Environment and secrets
 .env
 .env.local
+.secret_key
 
 # ROMs and disk images
 *.dsk

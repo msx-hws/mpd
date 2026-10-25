@@ -5,104 +5,188 @@
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='vendor/swagger-ui/swagger-ui.css') }}">
 <style>
-    /* Dark retro styling for Swagger UI in MPD */
+    /* Dark retro cyberpunk theme for Swagger UI */
     .swagger-ui {
-        color: #d1fae5;
-        font-family: var(--font-mono, monospace);
+        color: #d1fae5 !important;
+        font-family: var(--font-mono, monospace) !important;
     }
-    .swagger-ui .info {
-        margin: 20px 0;
-    }
-    .swagger-ui .info .title {
+    .swagger-ui .topbar { display: none !important; }
+    
+    /* Typography & Headers */
+    .swagger-ui .info { margin: 20px 0; }
+    .swagger-ui .info .title,
+    .swagger-ui .info h1, .swagger-ui .info h2, .swagger-ui .info h3, .swagger-ui .info h4, .swagger-ui .info h5 {
         color: #6ee7b7 !important;
         font-family: inherit;
         font-weight: 700;
         letter-spacing: 0.05em;
     }
-    .swagger-ui .info p, .swagger-ui .info li, .swagger-ui .info table {
+    .swagger-ui .info p, .swagger-ui .info li, .swagger-ui .info table,
+    .swagger-ui .info .base-url, .swagger-ui .info a {
         color: #a7f3d0 !important;
+        font-family: inherit;
     }
-    .swagger-ui .info a {
+    .swagger-ui .info a:hover {
         color: #34d399 !important;
+        text-decoration: underline;
     }
+
+    /* Scheme & Server Selectors */
     .swagger-ui .scheme-container {
-        background: rgba(0, 0, 0, 0.4) !important;
+        background: rgba(0, 0, 0, 0.6) !important;
         box-shadow: none !important;
-        border: 1px solid rgba(6, 78, 59, 0.4);
-        padding: 15px;
-        margin-bottom: 20px;
+        border: 1px solid rgba(6, 78, 59, 0.6) !important;
+        padding: 16px !important;
+        margin-bottom: 24px !important;
+        border-radius: 2px;
+    }
+    .swagger-ui .schemes > label, .swagger-ui .servers > label {
+        color: #34d399 !important;
+        font-family: inherit;
+        font-weight: bold;
     }
     .swagger-ui select {
         background: #050505 !important;
         color: #6ee7b7 !important;
         border: 1px solid #065f46 !important;
-        font-family: inherit;
+        font-family: inherit !important;
+        border-radius: 2px !important;
+        padding: 6px 10px !important;
     }
+    .swagger-ui select:focus {
+        border-color: #10b981 !important;
+        outline: none !important;
+    }
+
+    /* Tags / Section Headers */
     .swagger-ui .opblock-tag {
         color: #34d399 !important;
-        font-family: inherit;
-        border-bottom: 1px solid rgba(6, 78, 59, 0.4) !important;
+        font-family: inherit !important;
+        border-bottom: 1px solid rgba(6, 78, 59, 0.5) !important;
+        margin: 20px 0 10px 0 !important;
     }
+    .swagger-ui .opblock-tag small {
+        color: #059669 !important;
+        font-family: inherit !important;
+    }
+    .swagger-ui .opblock-tag svg {
+        fill: #34d399 !important;
+    }
+
+    /* Operations / Endpoint Blocks */
     .swagger-ui .opblock {
-        background: rgba(0, 0, 0, 0.6) !important;
+        background: rgba(0, 0, 0, 0.65) !important;
         border: 1px solid #065f46 !important;
         box-shadow: none !important;
         border-radius: 2px !important;
+        margin: 0 0 14px 0 !important;
+    }
+    .swagger-ui .opblock.is-open {
+        border-color: #059669 !important;
+    }
+    .swagger-ui .opblock .opblock-summary {
+        border-bottom: 1px solid rgba(6, 78, 59, 0.3) !important;
+        padding: 10px 14px !important;
     }
     .swagger-ui .opblock .opblock-summary-method {
-        font-family: inherit;
-        font-weight: 700;
-        border-radius: 2px;
+        font-family: inherit !important;
+        font-weight: 700 !important;
+        border-radius: 2px !important;
+        text-shadow: none !important;
+        min-width: 70px;
+        text-align: center;
     }
+    /* Specific Method Badges */
+    .swagger-ui .opblock.opblock-get .opblock-summary-method { background: #047857 !important; color: #ecfdf5 !important; }
+    .swagger-ui .opblock.opblock-post .opblock-summary-method { background: #065f46 !important; color: #6ee7b7 !important; border: 1px solid #059669 !important; }
+    .swagger-ui .opblock.opblock-put .opblock-summary-method { background: #854d0e !important; color: #fef08a !important; }
+    .swagger-ui .opblock.opblock-delete .opblock-summary-method { background: #991b1b !important; color: #fee2e2 !important; }
+
     .swagger-ui .opblock .opblock-summary-path,
     .swagger-ui .opblock .opblock-summary-path__deprecated {
         color: #d1fae5 !important;
-        font-family: inherit;
+        font-family: inherit !important;
+        font-weight: bold;
     }
     .swagger-ui .opblock .opblock-summary-description {
         color: #6ee7b7 !important;
-        font-family: inherit;
+        font-family: inherit !important;
     }
+    .swagger-ui .opblock-summary svg {
+        fill: #10b981 !important;
+    }
+
+    /* Expanded Block Interior */
     .swagger-ui .opblock-body {
-        background: rgba(5, 5, 5, 0.9) !important;
+        background: #050505 !important;
         color: #d1fae5 !important;
     }
     .swagger-ui .opblock-section-header {
         background: rgba(6, 78, 59, 0.25) !important;
         border-bottom: 1px solid #065f46 !important;
+        padding: 8px 14px !important;
     }
     .swagger-ui .opblock-section-header h4 {
-        color: #a7f3d0 !important;
-        font-family: inherit;
+        color: #6ee7b7 !important;
+        font-family: inherit !important;
+        font-weight: bold;
+        letter-spacing: 0.05em;
     }
+
+    /* Tables & Parameters */
     .swagger-ui table thead tr td, .swagger-ui table thead tr th {
         color: #34d399 !important;
         border-bottom: 1px solid #065f46 !important;
-        font-family: inherit;
+        font-family: inherit !important;
+        background: transparent !important;
+    }
+    .swagger-ui table tbody tr td {
+        border-bottom: 1px solid rgba(6, 78, 59, 0.25) !important;
+        padding: 10px 0 !important;
+        color: #d1fae5 !important;
     }
     .swagger-ui .parameter__name {
         color: #6ee7b7 !important;
-        font-family: inherit;
+        font-family: inherit !important;
+        font-weight: bold;
+    }
+    .swagger-ui .parameter__name.required:after {
+        color: #ef4444 !important;
     }
     .swagger-ui .parameter__type {
         color: #10b981 !important;
-        font-family: inherit;
+        font-family: inherit !important;
+    }
+    .swagger-ui .parameter__in {
+        color: #047857 !important;
+        font-family: inherit !important;
     }
     .swagger-ui .parameter__deprecated {
         color: #ef4444 !important;
     }
-    .swagger-ui input[type=text], .swagger-ui textarea {
+
+    /* Inputs, Textareas & Buttons */
+    .swagger-ui input[type=text], .swagger-ui input[type=password], .swagger-ui textarea {
         background: #000 !important;
         color: #6ee7b7 !important;
         border: 1px solid #065f46 !important;
-        font-family: inherit;
+        font-family: inherit !important;
+        border-radius: 2px !important;
+        padding: 6px 10px !important;
+    }
+    .swagger-ui input[type=text]:focus, .swagger-ui textarea:focus {
+        border-color: #10b981 !important;
+        outline: none !important;
+        box-shadow: 0 0 8px rgba(16, 185, 129, 0.3) !important;
     }
     .swagger-ui .btn {
-        background: rgba(6, 78, 59, 0.3) !important;
+        background: rgba(6, 78, 59, 0.35) !important;
         color: #6ee7b7 !important;
         border: 1px solid #059669 !important;
-        font-family: inherit;
-        border-radius: 2px;
+        font-family: inherit !important;
+        font-weight: bold;
+        border-radius: 2px !important;
+        transition: all 0.15s ease-in-out;
     }
     .swagger-ui .btn:hover {
         background: #059669 !important;
@@ -113,39 +197,119 @@
         color: #fff !important;
         border-color: #10b981 !important;
     }
+    .swagger-ui .btn.execute:hover {
+        background-color: #10b981 !important;
+        color: #000 !important;
+    }
+    .swagger-ui .btn.cancel {
+        border-color: #991b1b !important;
+        color: #f87171 !important;
+    }
+    .swagger-ui .btn.cancel:hover {
+        background: #dc2626 !important;
+        color: #fff !important;
+    }
+
+    /* Responses */
+    .swagger-ui .responses-wrapper {
+        background: transparent !important;
+    }
+    .swagger-ui .responses-inner h4, .swagger-ui .responses-inner h5 {
+        color: #6ee7b7 !important;
+        font-family: inherit !important;
+    }
     .swagger-ui .response-col_status {
         color: #34d399 !important;
-        font-family: inherit;
+        font-family: inherit !important;
+        font-weight: bold;
     }
     .swagger-ui .response-col_description__inner div.markdown, 
     .swagger-ui .response-col_description__inner div.renderedMarkdown {
         color: #d1fae5 !important;
     }
+    .swagger-ui .response-col_links {
+        color: #047857 !important;
+    }
+
+    /* Code & Pre Blocks */
+    .swagger-ui pre, .swagger-ui code, .swagger-ui .highlight-code {
+        background: #000000 !important;
+        color: #6ee7b7 !important;
+        border: 1px solid #065f46 !important;
+        font-family: inherit !important;
+        border-radius: 2px !important;
+    }
+    .swagger-ui .microlight {
+        background: #000000 !important;
+        color: #6ee7b7 !important;
+    }
+    .swagger-ui .curl-command {
+        background: #000000 !important;
+        border: 1px solid #065f46 !important;
+    }
+
+    /* Models / Schemas Section */
     .swagger-ui section.models {
-        border: 1px solid rgba(6, 78, 59, 0.4) !important;
-        background: rgba(0, 0, 0, 0.4) !important;
+        border: 1px solid rgba(6, 78, 59, 0.5) !important;
+        background: rgba(0, 0, 0, 0.5) !important;
+        border-radius: 2px !important;
+    }
+    .swagger-ui section.models.is-open h4 {
+        border-bottom: 1px solid rgba(6, 78, 59, 0.4) !important;
     }
     .swagger-ui section.models h4 {
         color: #34d399 !important;
-        border-bottom: 1px solid rgba(6, 78, 59, 0.4) !important;
-        font-family: inherit;
+        font-family: inherit !important;
+    }
+    .swagger-ui section.models h4 svg {
+        fill: #34d399 !important;
     }
     .swagger-ui section.models .model-container {
-        background: rgba(5, 5, 5, 0.8) !important;
+        background: rgba(5, 5, 5, 0.85) !important;
+        margin: 10px 0 !important;
+        border: 1px solid #065f46 !important;
+    }
+    .swagger-ui .model-box {
+        background: transparent !important;
     }
     .swagger-ui .model-title {
         color: #6ee7b7 !important;
+        font-family: inherit !important;
     }
     .swagger-ui .model {
         color: #a7f3d0 !important;
+        font-family: inherit !important;
     }
-    .swagger-ui pre {
-        background: #000 !important;
+    .swagger-ui .prop-type {
+        color: #10b981 !important;
+    }
+    .swagger-ui .prop-format {
+        color: #059669 !important;
+    }
+    .swagger-ui .model-toggle:after {
+        filter: invert(70%) sepia(80%) saturate(400%) hue-rotate(110deg) !important;
+    }
+
+    /* Authorize Modal & Badges */
+    .swagger-ui .dialog-ux .modal-ux {
+        background: #050505 !important;
+        border: 1px solid #10b981 !important;
+        box-shadow: 0 0 30px rgba(16, 185, 129, 0.3) !important;
+        border-radius: 2px !important;
+        font-family: inherit !important;
+    }
+    .swagger-ui .dialog-ux .modal-ux-header {
+        border-bottom: 1px solid #065f46 !important;
+    }
+    .swagger-ui .dialog-ux .modal-ux-header h3 {
         color: #6ee7b7 !important;
-        border: 1px solid #065f46 !important;
-        font-family: inherit;
     }
-    .swagger-ui .topbar { display: none; }
+    .swagger-ui .dialog-ux .modal-ux-content {
+        color: #d1fae5 !important;
+    }
+    .swagger-ui .auth-container h4 {
+        color: #34d399 !important;
+    }
 </style>
 {% endblock %}
 
