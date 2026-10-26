@@ -28,12 +28,13 @@ def safe_path(relative_path):
     return destination
 
 def timestamp_filename(filename, dt=None):
-    """Prefix a filename with datetime stamp (YYYYMMDD_HHMMSS_filename)."""
+    """Append datetime stamp to filename before extension (base_YYYYMMDD_HHMMSS.ext)."""
     if dt is None:
         from datetime import datetime
         dt = datetime.now()
     timestamp = dt.strftime("%Y%m%d_%H%M%S")
-    return f"{timestamp}_{filename}"
+    base, ext = os.path.splitext(filename)
+    return f"{base}_{timestamp}{ext}"
 
 def list_directory_structured():
     """Returns a list of dictionaries representing the file structure, sorted by path."""

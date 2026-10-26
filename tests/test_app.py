@@ -40,7 +40,7 @@ class TestMSXServer(unittest.TestCase):
         from datetime import datetime
         fixed_dt = datetime(2026, 10, 6, 18, 30, 45)
         stamped = timestamp_filename("game.rom", dt=fixed_dt)
-        self.assertEqual(stamped, "20261006_183045_game.rom")
+        self.assertEqual(stamped, "game_20261006_183045.rom")
 
 class TestAPIEndpoints(unittest.TestCase):
     def setUp(self):
@@ -62,7 +62,8 @@ class TestAPIEndpoints(unittest.TestCase):
         res_json = res.get_json()
         self.assertTrue(res_json['success'])
         uploaded_filename = res_json['filename']
-        self.assertTrue(uploaded_filename.endswith(f"_{test_filename}"))
+        self.assertTrue(uploaded_filename.startswith("test_api_file_"))
+        self.assertTrue(uploaded_filename.endswith(".rom"))
         
         uploaded_path = os.path.join(SERVE_DIRECTORY, uploaded_filename)
         self.assertTrue(os.path.exists(uploaded_path))
@@ -107,7 +108,7 @@ class TestAPIEndpoints(unittest.TestCase):
         saved_name = res_json['filename']
         
         import re
-        self.assertTrue(re.match(r"^\d{8}_\d{6}_unique_stamp_test\.rom$", saved_name))
+        self.assertTrue(re.match(r"^unique_stamp_test_\d{8}_\d{6}\.rom$", saved_name))
         
         uploaded_path = os.path.join(SERVE_DIRECTORY, saved_name)
         self.assertTrue(os.path.exists(uploaded_path))
