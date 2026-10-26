@@ -250,24 +250,37 @@ def about():
 
 def get_server_network_ip():
     """Determine best machine/server IP address for banner injection and network info."""
+    host_header = request.headers.get("Host", "").split(":")[0].strip()
+    try:
+        host_ip = ipaddress.ip_address(host_header)
+        if not (host_ip.is_loopback or host_ip.is_unspecified):
+            return str(host_ip)
+    except ValueError:
+        pass
+
     outbound_ip = None
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.connect(("8.8.8.8", 80))
-        outbound_ip = s.getsockname()[0]
-        s.close()
+        try:
+            s.connect(("8.8.8.8", 80))
+            outbound_ip = s.getsockname()[0]
+        finally:
+            s.close()
     except Exception:
         outbound_ip = None
 
+    if not outbound_ip or ipaddress.ip_address(outbound_ip).is_loopback:
+        try:
+            for result in socket.getaddrinfo(socket.gethostname(), None, socket.AF_INET):
+                candidate = result[4][0]
+                address = ipaddress.ip_address(candidate)
+                if not (address.is_loopback or address.is_link_local or address.is_unspecified):
+                    outbound_ip = candidate
+                    break
+        except (OSError, ValueError):
+            pass
+
     if os.path.exists("/.dockerenv"):
-        host_header = request.headers.get("Host", "").split(":")[0].strip() if has_request_context() else ""
-        if host_header:
-            try:
-                ip_cand = ipaddress.ip_address(host_header)
-                if not ip_cand.is_loopback:
-                    return str(ip_cand)
-            except ValueError:
-                pass
         for target in ("host.docker.internal", "gateway.docker.internal"):
             try:
                 resolved = socket.gethostbyname(target)

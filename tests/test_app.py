@@ -3,6 +3,7 @@ import json
 import unittest
 import os
 import logging
+from unittest.mock import MagicMock, mock_open, patch
 logging.disable(logging.CRITICAL)
 
 from app.utils import safe_relative_path, safe_path, SERVE_DIRECTORY
@@ -214,6 +215,45 @@ class TestAPIEndpoints(unittest.TestCase):
         self.assertIn('machine_ip', data)
         self.assertEqual(data['machine_ip'], '192.168.1.100')
         self.assertEqual(data['url_txt_machine'], 'http://192.168.1.100/')
+        res.close()
+
+    def test_api_network_info_falls_back_to_host_ipv4(self):
+        addresses = [
+            (0, 0, 0, '', ('127.0.0.1', 0)),
+            (0, 0, 0, '', ('192.168.1.42', 0)),
+        ]
+        with patch('app.server.socket.socket', side_effect=OSError), \
+                patch('app.server.socket.getaddrinfo', return_value=addresses), \
+                patch('app.server.os.path.exists', return_value=False):
+            res = self.client.get('/api/network-info')
+
+        self.assertEqual(res.status_code, 200)
+        data = res.get_json()
+        self.assertEqual(data['machine_ip'], '192.168.1.42')
+        self.assertEqual(data['url_txt_machine'], 'http://192.168.1.42/')
+        res.close()
+
+    def test_api_network_info_with_localhost_host_header_in_docker(self):
+        machine_socket = MagicMock()
+        machine_socket.getsockname.return_value = ('172.19.0.2', 0)
+        docker_socket = MagicMock()
+        docker_socket.getsockname.return_value = ('172.19.0.2', 0)
+        route_table = (
+            "Iface Destination Gateway Flags RefCnt Use Metric Mask\n"
+            "eth0 00000000 0101A8C0 0003 0 0 0 00000000\n"
+        )
+
+        with patch('app.server.socket.socket', side_effect=[machine_socket, docker_socket]), \
+                patch('app.server.socket.gethostbyname', side_effect=OSError), \
+                patch('app.server.os.path.exists', side_effect=lambda path: path == '/.dockerenv'), \
+                patch('builtins.open', mock_open(read_data=route_table)):
+            res = self.client.get('/api/network-info', headers={'Host': 'localhost'})
+
+        self.assertEqual(res.status_code, 200)
+        data = res.get_json()
+        self.assertEqual(data['machine_ip'], '192.168.1.1')
+        self.assertEqual(data['docker_ip'], '172.19.0.2')
+        self.assertEqual(data['url_txt_machine'], 'http://192.168.1.1/')
         res.close()
 
     def test_no_remote_sources_and_local_assets_served(self):
