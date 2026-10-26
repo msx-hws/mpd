@@ -104,7 +104,7 @@
                             {{ _('copy') }}
                         </button>
                     </div>
-                    <p class="text-[11px] text-emerald-600">IP van deze host machine op het lokale netwerk (LAN). De MSX Pico cartridge zoekt dit IP.</p>
+                    <p class="text-[11px] text-emerald-600">{{ _('network_ip_setup') }}</p>
                 </div>
 
                 <!-- Docker IP block -->
@@ -184,19 +184,17 @@
                     if (res.ok) {
                         const data = await res.json();
                         const clientHost = window.location.hostname;
-                        // Use machine IP returned by API or fallback to window.location.hostname if valid IP
-                        let machineIp = data.machine_ip;
-                        if (!machineIp || machineIp === '127.0.0.1' || machineIp.startsWith('172.')) {
-                            if (clientHost && clientHost !== 'localhost' && !clientHost.startsWith('127.')) {
-                                machineIp = clientHost;
-                            }
-                        }
-                        
-                        machineIpDisplay.textContent = machineIp || clientHost || '127.0.0.1';
+                        const isLocalHost = !clientHost || clientHost === 'localhost' ||
+                            clientHost.endsWith('.localhost') || clientHost.startsWith('127.') ||
+                            clientHost === '::1';
+                        const machineIp = data.machine_ip ||
+                            (data.is_docker || isLocalHost ? '' : clientHost);
+
+                        machineIpDisplay.textContent = machineIp || 'N/A';
                         dockerIpDisplay.textContent = data.docker_ip || 'N/A';
-                        
-                        const chosenIp = machineIp || clientHost || '127.0.0.1';
-                        urlTxtContent.textContent = 'http://' + chosenIp + '/';
+                        urlTxtContent.textContent = machineIp
+                            ? 'http://' + machineIp + '/'
+                            : "{{ _('network_ip_unavailable') }}";
                     } else {
                         fallbackInfo();
                     }
@@ -206,10 +204,14 @@
             }
 
             function fallbackInfo() {
-                const host = window.location.hostname || '127.0.0.1';
-                machineIpDisplay.textContent = host;
+                const host = window.location.hostname;
+                const isLocalHost = !host || host === 'localhost' ||
+                    host.endsWith('.localhost') || host.startsWith('127.') || host === '::1';
+                machineIpDisplay.textContent = isLocalHost ? 'N/A' : host;
                 dockerIpDisplay.textContent = 'N/A';
-                urlTxtContent.textContent = 'http://' + host + '/';
+                urlTxtContent.textContent = isLocalHost
+                    ? "{{ _('network_ip_unavailable') }}"
+                    : 'http://' + host + '/';
             }
 
             function openModal() {

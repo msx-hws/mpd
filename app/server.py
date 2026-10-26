@@ -250,13 +250,30 @@ def about():
 
 def get_server_network_ip():
     """Determine best machine/server IP address for banner injection and network info."""
+    configured_ip = os.getenv("HOST_IP", "").strip()
+    if configured_ip:
+        try:
+            address = ipaddress.ip_address(configured_ip)
+            if address.version == 4 and not (
+                address.is_loopback or address.is_link_local or address.is_unspecified or address.is_multicast
+            ):
+                return str(address)
+        except ValueError:
+            pass
+        app.logger.warning("HOST_IP must be a valid, non-loopback IPv4 address")
+
     host_header = request.headers.get("Host", "").split(":")[0].strip()
     try:
         host_ip = ipaddress.ip_address(host_header)
-        if not (host_ip.is_loopback or host_ip.is_unspecified):
+        if host_ip.version == 4 and not (
+            host_ip.is_loopback or host_ip.is_link_local or host_ip.is_unspecified or host_ip.is_multicast
+        ):
             return str(host_ip)
     except ValueError:
         pass
+
+    if os.path.exists("/.dockerenv"):
+        return None
 
     outbound_ip = None
     try:
@@ -274,31 +291,21 @@ def get_server_network_ip():
             for result in socket.getaddrinfo(socket.gethostname(), None, socket.AF_INET):
                 candidate = result[4][0]
                 address = ipaddress.ip_address(candidate)
-                if not (address.is_loopback or address.is_link_local or address.is_unspecified):
+                if address.version == 4 and not (
+                    address.is_loopback or address.is_link_local or address.is_unspecified or address.is_multicast
+                ):
                     outbound_ip = candidate
                     break
         except (OSError, ValueError):
             pass
 
-    if os.path.exists("/.dockerenv"):
-        for target in ("host.docker.internal", "gateway.docker.internal"):
-            try:
-                resolved = socket.gethostbyname(target)
-                if resolved and not resolved.startswith("127."):
-                    return resolved
-            except Exception:
-                pass
-        try:
-            with open("/proc/net/route", "r") as f:
-                for line in f.readlines()[1:]:
-                    fields = line.strip().split()
-                    if len(fields) >= 3 and fields[1] == "00000000":
-                        gw_hex = fields[2]
-                        return socket.inet_ntoa(bytes.fromhex(gw_hex)[::-1])
-        except Exception:
-            pass
-
-    return outbound_ip or "127.0.0.1"
+    if outbound_ip:
+        address = ipaddress.ip_address(outbound_ip)
+        if address.version == 4 and not (
+            address.is_loopback or address.is_link_local or address.is_unspecified or address.is_multicast
+        ):
+            return str(address)
+    return None
 
 
 # --- API Routes ---

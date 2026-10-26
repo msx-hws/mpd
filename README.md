@@ -90,6 +90,8 @@ Docker is the quickest and easiest way to deploy the server.
    cp .env.example .env
    ```
    *(By default, `HOST_PORT=80` is configured. **Leave this on port 80**, as the MSX Pico requires port 80 and does not support custom ports).*
+
+   With Docker Desktop, also set `HOST_IP` in `.env` to your PC's or Mac's LAN IPv4 address. Docker Desktop cannot reliably detect that address from inside the container.
 3. **Start the container:**
    ```bash
    docker compose up -d
