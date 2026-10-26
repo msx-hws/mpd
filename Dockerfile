@@ -5,7 +5,8 @@
 FROM alpine:3.20 AS css-builder
 ARG TARGETARCH
 ARG TAILWIND_VERSION=4.3.3
-RUN case "${TARGETARCH:-amd64}" in \
+RUN apk add --no-cache libstdc++ \
+    && case "${TARGETARCH:-amd64}" in \
       amd64) TW_ARCH=x64 ;; \
       arm64) TW_ARCH=arm64 ;; \
       *) echo "Unsupported architecture: ${TARGETARCH}" >&2; exit 1 ;; \
