@@ -3,6 +3,7 @@ import json
 import unittest
 import os
 import logging
+from unittest.mock import patch
 logging.disable(logging.CRITICAL)
 
 from app.utils import safe_relative_path, safe_path, SERVE_DIRECTORY
@@ -259,6 +260,16 @@ class TestAPIEndpoints(unittest.TestCase):
         self.assertEqual(res_dl.status_code, 200)
         self.assertIn(b"name:server_info.rom", res_dl.data)
         res_dl.close()
+
+    def test_msx_pico_server_info_banner_omitted_without_server_ip(self):
+        with patch('app.server.get_server_network_ip', return_value=None):
+            res = self.client.get('/index2.php?type=ALL')
+
+        self.assertEqual(res.status_code, 200)
+        first_line = res.data.decode("utf-8").splitlines()[0]
+        self.assertFalse(first_line.startswith("mpd ["))
+        self.assertNotIn("None", first_line)
+        res.close()
 
     def test_msx_pico_com_support_and_nested_files_detection(self):
         """Verify that .com files placed directly in deep subdirectories under files/ are detected and served."""

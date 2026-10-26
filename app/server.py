@@ -488,6 +488,8 @@ def _index2_record_download(rel_path, remote_addr):
 
 def _index2_banner():
     server_ip = get_server_network_ip()
+    if not server_ip:
+        return None
     return (f"mpd [{server_ip}]", f"MSX Pico DEVserver (mpd) active on http://{server_ip}/")
 
 
