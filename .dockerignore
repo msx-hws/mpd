@@ -29,8 +29,7 @@ venv/
 .venv/
 .pytest_cache/
 
-# Docs, tests & design artifacts
-docs/
+# Tests & design artifacts
 tests/
 *.md
 LICENSE
