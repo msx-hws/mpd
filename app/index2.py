@@ -47,6 +47,7 @@ def list_entries(root_dir, extensions, request_char="a"):
                     size += (ROM_LIST_BLOCK - remainder) if size > 0 else ROM_LIST_BLOCK
 
             display_name = os.path.splitext(filename)[0]
+            display_name = re.sub(r"^\d{8}_\d{6}_", "", display_name)
             display_name = display_name.replace(" [original]", "")
             display_name = re.sub(r"(\]\s)(\[\d+\])$", r"]\2", display_name)
 
