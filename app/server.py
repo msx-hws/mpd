@@ -495,7 +495,7 @@ def _index2_banner():
 
 app.register_blueprint(create_index2_blueprint(
     get_root_dir=lambda: SERVE_DIRECTORY,
-    get_banner=_index2_banner,
+    get_banner=None,
     on_request=lambda req: app.logger.info(
         f"API Request: {req.url} from {req.remote_addr} (UA: {req.user_agent})"),
     on_download=_index2_record_download,

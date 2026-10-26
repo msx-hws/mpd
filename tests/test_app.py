@@ -248,27 +248,13 @@ class TestAPIEndpoints(unittest.TestCase):
         self.assertEqual(res.mimetype, "application/json")
         self.assertFalse(any(item["name"].startswith("mpd [") for item in res.get_json()))
 
-    def test_msx_pico_server_info_banner_injected(self):
-        """Verify that server name and IP banner is injected at the top of the MSX listing."""
+    def test_msx_pico_server_info_banner_not_injected_to_prevent_parser_error(self):
+        """MSX Pico cartridge firmware requires strict file listings; no dummy banner entries."""
         res = self.client.get('/index2.php?type=ROM')
         self.assertEqual(res.status_code, 200)
-        first_line = res.data.decode("utf-8").split("\n")[0]
-        self.assertTrue(first_line.startswith("mpd ["))
-        
-        # Test downloading banner index 0 returns friendly info ROM
-        res_dl = self.client.get('/index2.php?type=ROM&download=0')
-        self.assertEqual(res_dl.status_code, 200)
-        self.assertIn(b"name:server_info.rom", res_dl.data)
-        res_dl.close()
-
-    def test_msx_pico_server_info_banner_omitted_without_server_ip(self):
-        with patch('app.server.get_server_network_ip', return_value=None):
-            res = self.client.get('/index2.php?type=ALL')
-
-        self.assertEqual(res.status_code, 200)
-        first_line = res.data.decode("utf-8").splitlines()[0]
-        self.assertFalse(first_line.startswith("mpd ["))
-        self.assertNotIn("None", first_line)
+        lines = res.data.decode("utf-8").strip().splitlines()
+        self.assertTrue(len(lines) > 0)
+        self.assertFalse(lines[0].startswith("mpd ["))
         res.close()
 
     def test_msx_pico_com_support_and_nested_files_detection(self):

@@ -28,8 +28,5 @@ Thumbs.db
 .idea/
 .vscode/
 
-# Project private notes
-AGENTS.md
-
 # Generated CSS (built with: manage_ws make-css mpd)
 app/static/css/style.css
