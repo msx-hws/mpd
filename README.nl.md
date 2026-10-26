@@ -89,7 +89,6 @@ Docker is de snelste en makkelijkste manier om de server te draaien.
    ```
    *(Standaard staat `HOST_PORT=80` ingesteld. **Laat dit op poort 80 staan**, want de MSX Pico kan alleen verbinding maken via poort 80 en ondersteunt geen aangepaste poorten!).*
 
-   Bij Docker Desktop moet je ook `HOST_IP` in `.env` invullen met het LAN-IPv4-adres van je pc of Mac. Docker Desktop kan dit adres niet betrouwbaar vanuit de container detecteren.
 3. **Start de server:**
    ```bash
    docker compose up -d

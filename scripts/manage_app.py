@@ -7,7 +7,6 @@ Provides full API integration with mpd:
   - upload: Upload file(s) or entire directories (with recursive support)
   - download: Download a file from the server
   - delete: Delete a file or directory from the server
-  - network-info: Query host/container network info and URL.TXT recommendation
   - status: Query server status/health
 """
 
@@ -199,23 +198,6 @@ def cmd_delete(args):
         sys.exit(1)
 
 
-def cmd_network(args):
-    url = build_url(args.server, "/api/network-info")
-    status, data = request_json(url)
-    if status == 200:
-        if args.json:
-            print(json.dumps(data, indent=2))
-        else:
-            print("📡 mpd Network & Cartridge Configuration:")
-            print(f"  - Machine IP:   {data.get('machine_ip')}")
-            print(f"  - Docker IP:    {data.get('docker_ip')}")
-            print(f"  - Host Port:    {data.get('host_port')}")
-            print(f"  - URL.TXT Host: {data.get('url_txt_machine')}")
-    else:
-        print(f"[!] Error fetching network info (HTTP {status}): {data}", file=sys.stderr)
-        sys.exit(1)
-
-
 def cmd_status(args):
     url = build_url(args.server, "/health/getstatus")
     status, data = request_json(url)
@@ -265,11 +247,6 @@ def main():
     p_del = subparsers.add_parser("delete", help="Delete a file or folder from server")
     p_del.add_argument("remote_path", help="Path on server to delete")
     p_del.set_defaults(func=cmd_delete)
-
-    # Subcommand: network
-    p_net = subparsers.add_parser("network", help="Get network info and URL.TXT config")
-    p_net.add_argument("--json", action="store_true", help="Output raw JSON")
-    p_net.set_defaults(func=cmd_network)
 
     # Subcommand: status
     p_stat = subparsers.add_parser("status", help="Check server health/status")

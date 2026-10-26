@@ -3,7 +3,6 @@ import json
 import unittest
 import os
 import logging
-from unittest.mock import MagicMock, patch
 logging.disable(logging.CRITICAL)
 
 from app.utils import safe_relative_path, safe_path, SERVE_DIRECTORY
@@ -206,63 +205,16 @@ class TestAPIEndpoints(unittest.TestCase):
             self.assertIn(b'SwaggerUIBundle', res.data)
             res.close()
 
-    def test_api_network_info(self):
-        res = self.client.get('/api/network-info', headers={'Host': '192.168.1.100'})
-        self.assertEqual(res.status_code, 200)
-        data = res.get_json()
-        self.assertTrue(data['success'])
-        self.assertIn('docker_ip', data)
-        self.assertIn('machine_ip', data)
-        self.assertEqual(data['machine_ip'], '192.168.1.100')
-        self.assertEqual(data['url_txt_machine'], 'http://192.168.1.100/')
-        res.close()
+    def test_network_url_helper_feature_removed(self):
+        for path in ('/', '/manage', '/about'):
+            res = self.client.get(path)
+            self.assertEqual(res.status_code, 200, path)
+            self.assertNotIn(b'navOpenNetworkModal', res.data)
+            self.assertNotIn(b'Network &amp; URL.TXT', res.data)
+            res.close()
 
-    def test_api_network_info_falls_back_to_host_ipv4(self):
-        addresses = [
-            (0, 0, 0, '', ('127.0.0.1', 0)),
-            (0, 0, 0, '', ('192.168.1.42', 0)),
-        ]
-        with patch('app.server.socket.socket', side_effect=OSError), \
-                patch('app.server.socket.getaddrinfo', return_value=addresses), \
-                patch('app.server.os.path.exists', return_value=False):
-            res = self.client.get('/api/network-info')
-
-        self.assertEqual(res.status_code, 200)
-        data = res.get_json()
-        self.assertEqual(data['machine_ip'], '192.168.1.42')
-        self.assertEqual(data['url_txt_machine'], 'http://192.168.1.42/')
-        res.close()
-
-    def test_api_network_info_does_not_report_docker_gateway_as_host_ip(self):
-        docker_socket = MagicMock()
-        docker_socket.getsockname.return_value = ('172.19.0.2', 0)
-
-        with patch.dict(os.environ, {'HOST_IP': ''}), \
-                patch('app.server.socket.socket', return_value=docker_socket), \
-                patch('app.server.os.path.exists', side_effect=lambda path: path == '/.dockerenv'):
-            res = self.client.get('/api/network-info', headers={'Host': 'localhost'})
-
-        self.assertEqual(res.status_code, 200)
-        data = res.get_json()
-        self.assertIsNone(data['machine_ip'])
-        self.assertEqual(data['docker_ip'], '172.19.0.2')
-        self.assertEqual(data['url_txt_machine'], '')
-        res.close()
-
-    def test_api_network_info_uses_configured_host_ip_in_docker(self):
-        docker_socket = MagicMock()
-        docker_socket.getsockname.return_value = ('172.19.0.2', 0)
-
-        with patch.dict(os.environ, {'HOST_IP': '192.168.65.22'}), \
-                patch('app.server.socket.socket', return_value=docker_socket), \
-                patch('app.server.os.path.exists', side_effect=lambda path: path == '/.dockerenv'):
-            res = self.client.get('/api/network-info', headers={'Host': 'localhost'})
-
-        self.assertEqual(res.status_code, 200)
-        data = res.get_json()
-        self.assertEqual(data['machine_ip'], '192.168.65.22')
-        self.assertEqual(data['docker_ip'], '172.19.0.2')
-        self.assertEqual(data['url_txt_machine'], 'http://192.168.65.22/')
+        res = self.client.get('/api/network-info')
+        self.assertEqual(res.status_code, 404)
         res.close()
 
     def test_no_remote_sources_and_local_assets_served(self):

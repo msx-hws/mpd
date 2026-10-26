@@ -249,19 +249,7 @@ def about():
     return render_template("about.html", system_info=system_info)
 
 def get_server_network_ip():
-    """Determine best machine/server IP address for banner injection and network info."""
-    configured_ip = os.getenv("HOST_IP", "").strip()
-    if configured_ip:
-        try:
-            address = ipaddress.ip_address(configured_ip)
-            if address.version == 4 and not (
-                address.is_loopback or address.is_link_local or address.is_unspecified or address.is_multicast
-            ):
-                return str(address)
-        except ValueError:
-            pass
-        app.logger.warning("HOST_IP must be a valid, non-loopback IPv4 address")
-
+    """Determine the server IP for the MSX Pico listing banner when possible."""
     host_header = request.headers.get("Host", "").split(":")[0].strip()
     try:
         host_ip = ipaddress.ip_address(host_header)
@@ -309,36 +297,6 @@ def get_server_network_ip():
 
 
 # --- API Routes ---
-
-@app.route("/api/network-info", methods=["GET"])
-def api_network_info():
-    """Return machine IP and Docker container IP for URL.TXT configuration."""
-    is_docker = os.path.exists("/.dockerenv")
-    machine_ip = get_server_network_ip()
-    
-    docker_ip = None
-    if is_docker:
-        try:
-            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            s.connect(("8.8.8.8", 80))
-            docker_ip = s.getsockname()[0]
-            s.close()
-        except Exception:
-            docker_ip = None
-
-    port = os.getenv("HOST_PORT", "80")
-    url_txt_machine = f"http://{machine_ip}/" if machine_ip else ""
-    url_txt_docker = f"http://{docker_ip}/" if docker_ip else ""
-
-    return jsonify({
-        "success": True,
-        "is_docker": is_docker,
-        "machine_ip": machine_ip,
-        "docker_ip": docker_ip,
-        "host_port": port,
-        "url_txt_machine": url_txt_machine,
-        "url_txt_docker": url_txt_docker
-    })
 
 @app.route("/api/files", methods=["GET"])
 def api_list_files():
