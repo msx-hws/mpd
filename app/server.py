@@ -248,54 +248,6 @@ def about():
     system_info = _health_payload()
     return render_template("about.html", system_info=system_info)
 
-def get_server_network_ip():
-    """Determine the server IP for the MSX Pico listing banner when possible."""
-    host_header = request.headers.get("Host", "").split(":")[0].strip()
-    try:
-        host_ip = ipaddress.ip_address(host_header)
-        if host_ip.version == 4 and not (
-            host_ip.is_loopback or host_ip.is_link_local or host_ip.is_unspecified or host_ip.is_multicast
-        ):
-            return str(host_ip)
-    except ValueError:
-        pass
-
-    if os.path.exists("/.dockerenv"):
-        return None
-
-    outbound_ip = None
-    try:
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        try:
-            s.connect(("8.8.8.8", 80))
-            outbound_ip = s.getsockname()[0]
-        finally:
-            s.close()
-    except Exception:
-        outbound_ip = None
-
-    if not outbound_ip or ipaddress.ip_address(outbound_ip).is_loopback:
-        try:
-            for result in socket.getaddrinfo(socket.gethostname(), None, socket.AF_INET):
-                candidate = result[4][0]
-                address = ipaddress.ip_address(candidate)
-                if address.version == 4 and not (
-                    address.is_loopback or address.is_link_local or address.is_unspecified or address.is_multicast
-                ):
-                    outbound_ip = candidate
-                    break
-        except (OSError, ValueError):
-            pass
-
-    if outbound_ip:
-        address = ipaddress.ip_address(outbound_ip)
-        if address.version == 4 and not (
-            address.is_loopback or address.is_link_local or address.is_unspecified or address.is_multicast
-        ):
-            return str(address)
-    return None
-
-
 # --- API Routes ---
 
 @app.route("/api/files", methods=["GET"])
@@ -486,16 +438,8 @@ def _index2_record_download(rel_path, remote_addr):
         app.logger.error(f"Failed to record download stats: {ex}")
 
 
-def _index2_banner():
-    server_ip = get_server_network_ip()
-    if not server_ip:
-        return None
-    return (f"mpd [{server_ip}]", f"MSX Pico DEVserver (mpd) active on http://{server_ip}/")
-
-
 app.register_blueprint(create_index2_blueprint(
     get_root_dir=lambda: SERVE_DIRECTORY,
-    get_banner=None,
     on_request=lambda req: app.logger.info(
         f"API Request: {req.url} from {req.remote_addr} (UA: {req.user_agent})"),
     on_download=_index2_record_download,

@@ -7,7 +7,6 @@ file in mpd and sync. This module must stay free of imports from the host applic
 
 import os
 import re
-import time
 
 from flask import Blueprint, Response, request
 
@@ -22,7 +21,7 @@ ROM_PAD_BLOCK = 4096
 ROM_LIST_BLOCK = 8192
 
 
-def list_entries(root_dir, extensions, request_char="a"):
+def list_entries(root_dir, extensions, request_char=""):
     """Return (display_name, size, rel_path, mtime) tuples below root_dir, newest first."""
     if not root_dir or not os.path.isdir(root_dir):
         return []
@@ -48,13 +47,14 @@ def list_entries(root_dir, extensions, request_char="a"):
 
             display_name = os.path.splitext(filename)[0]
             display_name = re.sub(r"^\d{8}_\d{6}_", "", display_name)
+            display_name = re.sub(r"_\d{8}_\d{6}$", "", display_name)
             display_name = display_name.replace(" [original]", "")
             display_name = re.sub(r"(\]\s)(\[\d+\])$", r"]\2", display_name)
 
             term = request_char.lower()
             name_lower = display_name.lower()
-            if term != "a":
-                if len(term) == 1:
+            if term and term != "a":
+                if len(term) == 1 and term.isalnum():
                     if not name_lower.startswith(term):
                         continue
                 elif term not in name_lower:
@@ -97,14 +97,11 @@ def _pad(content):
     return content
 
 
-def create_index2_blueprint(get_root_dir, get_banner=None, on_request=None,
-                            on_download=None, json_listing=None):
+def create_index2_blueprint(get_root_dir, on_request=None, on_download=None,
+                            json_listing=None):
     """Build the /index2.php blueprint.
 
     get_root_dir(): directory that is served.
-    get_banner():   optional (display_name, message) shown as first list entry so the
-                    developer can see which server answers; selecting it downloads a
-                    small info ROM.
     on_request(request): optional hook for request logging.
     on_download(rel_path, remote_addr): optional hook (statistics, logging).
     json_listing(files): optional; returns a JSON-serializable list for ?web=1 / ?format=json.
@@ -117,7 +114,7 @@ def create_index2_blueprint(get_root_dir, get_banner=None, on_request=None,
         if on_request:
             on_request(request)
         request_type = request.args.get("type", "ROM").upper()
-        request_char = request.args.get("char", "a")
+        request_char = request.args.get("char", "")
         download_index = request.args.get("download", None)
 
         extensions = EXTENSIONS_BY_TYPE.get(request_type)
@@ -135,20 +132,12 @@ def create_index2_blueprint(get_root_dir, get_banner=None, on_request=None,
             response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
             return response
 
-        banner = get_banner() if get_banner else None
-        if banner:
-            files = [(banner[0], 0, "", time.time())] + files
-
         if download_index is not None:
             if not download_index.isdigit():
                 return f"Error: Invalid download index {download_index}.", 400
             download_idx = int(download_index)
             if not 0 <= download_idx < len(files):
                 return f"Error: Invalid download index {download_idx}.", 400
-
-            if banner and download_idx == 0:
-                content = _pad(banner[1].encode("utf-8"))
-                return _rom_download(f"type:,start:,size:{len(content)},name:server_info.rom", content)
 
             _, _, rel_path, _ = files[download_idx]
             item_path = os.path.abspath(os.path.join(root_dir, rel_path))
@@ -173,7 +162,7 @@ def create_index2_blueprint(get_root_dir, get_banner=None, on_request=None,
                 header = f"type:,start:,size:{len(content)},name:{safe_filename}"
             return _rom_download(header, content)
 
-        result = "".join(f"{name}\t{size}\n" for name, size, _, _ in files) if files else "No files found\t0\n"
+        result = "".join(f"{name}\t{size}\n" for name, size, _, _ in files)
         return _pico_response(result.encode("utf-8"))
 
     return bp

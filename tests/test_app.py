@@ -2,12 +2,15 @@ import io
 import json
 import unittest
 import os
+import tempfile
 import logging
 from unittest.mock import patch
+from flask import Flask
 logging.disable(logging.CRITICAL)
 
 from app.utils import safe_relative_path, safe_path, SERVE_DIRECTORY
 from app.translations import TRANSLATIONS
+from app.index2 import create_index2_blueprint
 from app import app
 
 class TestMSXServer(unittest.TestCase):
@@ -146,7 +149,7 @@ class TestAPIEndpoints(unittest.TestCase):
         with open(test_file, "wb") as f:
             f.write(b"RECENT_TEST")
 
-        res = self.client.get('/index2.php/?type=ALL&char=a&web=1')
+        res = self.client.get('/index2.php/?type=ALL&web=1')
         self.assertEqual(res.status_code, 200)
         data = res.get_json()
         self.assertIsInstance(data, list)
@@ -175,7 +178,7 @@ class TestAPIEndpoints(unittest.TestCase):
         # set mtime to now
         os.utime(file_new, (time.time(), time.time()))
 
-        res = self.client.get('/index2.php/?type=ALL&char=a&web=1')
+        res = self.client.get('/index2.php/?type=ALL&web=1')
         self.assertEqual(res.status_code, 200)
         data = res.get_json()
 
@@ -253,10 +256,41 @@ class TestAPIEndpoints(unittest.TestCase):
         """MSX Pico cartridge firmware requires strict file listings; no dummy banner entries."""
         res = self.client.get('/index2.php?type=ROM')
         self.assertEqual(res.status_code, 200)
-        lines = res.data.decode("utf-8").strip().splitlines()
-        self.assertTrue(len(lines) > 0)
-        self.assertFalse(lines[0].startswith("mpd ["))
+        for line in res.data.decode("utf-8").splitlines():
+            name, size = line.split("\t")
+            self.assertTrue(name)
+            self.assertGreater(int(size), 0)
         res.close()
+
+    def test_index2_empty_listing_has_no_synthetic_entry(self):
+        with tempfile.TemporaryDirectory() as root_dir:
+            protocol_app = Flask(__name__)
+            protocol_app.register_blueprint(
+                create_index2_blueprint(get_root_dir=lambda: root_dir)
+            )
+            res = protocol_app.test_client().get('/index2.php')
+            self.assertEqual(res.status_code, 200)
+            self.assertEqual(res.data, b"")
+
+    def test_index2_char_a_shows_all_files(self):
+        alpha_file = os.path.join(
+            SERVE_DIRECTORY, "20261025_083246_alpha_protocol_test_20261025_083246.rom"
+        )
+        beta_file = os.path.join(SERVE_DIRECTORY, "beta_protocol_test.rom")
+        for path in (alpha_file, beta_file):
+            with open(path, "wb") as file:
+                file.write(b"test")
+
+        try:
+            res = self.client.get('/index2.php?type=ROM&char=a')
+            self.assertEqual(res.status_code, 200)
+            self.assertIn(b"alpha_protocol_test\t", res.data)
+            self.assertNotIn(b"20261025_083246", res.data)
+            self.assertIn(b"beta_protocol_test\t", res.data)
+        finally:
+            for path in (alpha_file, beta_file):
+                if os.path.exists(path):
+                    os.remove(path)
 
     def test_msx_pico_com_support_and_nested_files_detection(self):
         """Verify that .com files placed directly in deep subdirectories under files/ are detected and served."""
