@@ -28,8 +28,11 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1
 
-# Security: add non-root user
-RUN addgroup -S app && adduser -S app -G app
+# Install su-exec for dropping privileges in entrypoint
+RUN apk add --no-cache su-exec
+
+# Security: add non-root user with UID/GID 1000 (standard for Raspberry Pi / Debian users)
+RUN addgroup -g 1000 -S app && adduser -u 1000 -S app -G app
 
 WORKDIR /app
 # Gunicorn needs a writable HOME for its control server/heartbeat files.
@@ -45,10 +48,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . ./
 COPY --from=css-builder /src/app/static/css/style.css app/static/css/style.css
 
-# Ensure the app user owns the /app directory
-RUN chown -R app:app /app
-
-USER app
+# Make entrypoint executable and ensure ownership
+RUN chmod +x /app/entrypoint.sh && chown -R app:app /app
 
 EXPOSE 5001
 
@@ -56,4 +57,5 @@ EXPOSE 5001
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
   CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5001', timeout=3)" || exit 1
 
+ENTRYPOINT ["/app/entrypoint.sh"]
 CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5001", "--access-logfile", "-", "--error-logfile", "-", "--worker-tmp-dir", "/dev/shm", "app:app"]

@@ -331,7 +331,15 @@
                 body: formData
             });
 
-            const result = await response.json();
+            let result = {};
+            const contentType = response.headers.get('content-type') || '';
+            if (contentType.includes('application/json')) {
+                result = await response.json();
+            } else {
+                const text = await response.text();
+                result = { success: false, error: text || `Upload failed (HTTP ${response.status})` };
+            }
+
             if (!response.ok || !result.success) {
                 showUploadStatus(result.error || 'Upload failed.', true);
                 submitUploadBtn.disabled = false;
