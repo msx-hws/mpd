@@ -105,6 +105,7 @@ Klaar! Open nu in je browser:
 ## 📖 API & Swagger Documentatie
 
 De server beschikt over een complete REST API voor het automatiseren en beheren van bestanden:
+- **`GET /health`** — Publieke JSON-healthcheck met de huidige versie/release.
 - **`GET /api/files`** — Overzicht van alle bestanden en mappen (JSON).
 - **`POST /api/upload`** — Nieuw bestand uploaden (multipart form-data).
 - **`GET /api/download/<pad>`** — Bestand downloaden.

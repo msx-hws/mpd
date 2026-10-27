@@ -49,7 +49,13 @@ def list_entries(root_dir, extensions, request_char=""):
             display_name = re.sub(r"^\d{8}_\d{6}_", "", display_name)
             display_name = re.sub(r"_\d{8}_\d{6}$", "", display_name)
             display_name = display_name.replace(" [original]", "")
+            display_name = re.sub(r" - The Way To Formula 1", "", display_name)
+            display_name = re.sub(r"\s*\[(GoodMSX|BadDump)\](\[\d+\])?", "", display_name)
+            display_name = re.sub(r"\s*\[RC-\d+\]", "", display_name)
             display_name = re.sub(r"(\]\s)(\[\d+\])$", r"]\2", display_name)
+            display_name = display_name.strip()
+            if len(display_name) > 60:
+                display_name = display_name[:60].rstrip()
 
             term = request_char.lower()
             name_lower = display_name.lower()
@@ -163,6 +169,10 @@ def create_index2_blueprint(get_root_dir, on_request=None, on_download=None,
             return _rom_download(header, content)
 
         result = "".join(f"{name}\t{size}\n" for name, size, _, _ in files)
-        return _pico_response(result.encode("utf-8"))
+
+        def generate_listing():
+            yield result.encode("utf-8")
+
+        return _pico_response(generate_listing())
 
     return bp

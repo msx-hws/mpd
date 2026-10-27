@@ -158,6 +158,14 @@ def health():
         return jsonify({"status": "forbidden", "service": "mpd"}), 403
     return jsonify(_health_payload())
 
+@app.route("/health")
+def public_health():
+    return jsonify({
+        "status": "ok",
+        "service": "mpd",
+        "version": _get_version(),
+    })
+
 @app.route("/manage")
 def manage():
     message = session.pop('manage_message', None)

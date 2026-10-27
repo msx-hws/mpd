@@ -107,6 +107,7 @@ All done! Open your browser:
 ## 📖 API & Swagger Documentation
 
 The server provides a full REST API for automation and file management:
+- **`GET /health`** — Public JSON health check with the current version/release.
 - **`GET /api/files`** — Retrieve a structured JSON list of all files and folders.
 - **`POST /api/upload`** — Upload a new file (multipart form-data).
 - **`GET /api/download/<path>`** — Download a specific file.

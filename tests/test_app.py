@@ -51,6 +51,24 @@ class TestAPIEndpoints(unittest.TestCase):
         self.client = app.test_client()
         os.makedirs(SERVE_DIRECTORY, exist_ok=True)
 
+    def test_public_health_includes_version(self):
+        with patch("app.server._get_version", return_value="v1.2.3-0-gabc123"):
+            res = self.client.get(
+                "/health",
+                environ_base={"REMOTE_ADDR": "203.0.113.1"},
+            )
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.mimetype, "application/json")
+        self.assertEqual(
+            res.get_json(),
+            {
+                "status": "ok",
+                "service": "mpd",
+                "version": "v1.2.3-0-gabc123",
+            },
+        )
+
     def test_api_upload_download_delete_flow(self):
         # 1. Test File Upload via API
         test_filename = "test_api_file.rom"
@@ -271,6 +289,31 @@ class TestAPIEndpoints(unittest.TestCase):
             res = protocol_app.test_client().get('/index2.php')
             self.assertEqual(res.status_code, 200)
             self.assertEqual(res.data, b"")
+
+    def test_index2_pico_listing_streams_and_limits_display_names(self):
+        names = (
+            "F1 Spirit - The Way To Formula 1 - Konami (1987) [Color Choice by Paco v4].rom",
+            "F1 Spirit - The Way To Formula 1 - Konami (1987) [Enhanced v261023 by Toughkid].rom",
+            "F1 Spirit - The Way To Formula 1 - Konami (1987) [RC-752] [GoodMSX][665].rom",
+        )
+        with tempfile.TemporaryDirectory() as root_dir:
+            for name in names:
+                with open(os.path.join(root_dir, name), "wb") as file:
+                    file.write(b"test")
+
+            protocol_app = Flask(__name__)
+            protocol_app.register_blueprint(
+                create_index2_blueprint(get_root_dir=lambda: root_dir)
+            )
+            res = protocol_app.test_client().get("/index2.php?type=ROM&char=f")
+
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(res.is_streamed)
+        self.assertNotIn("Content-Length", res.headers)
+        lines = res.data.decode("utf-8").splitlines()
+        self.assertEqual(len(lines), 3)
+        self.assertTrue(all(len(line.split("\t", 1)[0]) <= 60 for line in lines))
+        self.assertTrue(all(line.startswith("F1 Spirit - Konami (1987)") for line in lines))
 
     def test_index2_char_a_shows_all_files(self):
         alpha_file = os.path.join(
